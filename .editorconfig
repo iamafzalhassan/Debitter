@@ -1,0 +1,9 @@
+[*.{kt,kts}]
+ktlint_code_style = intellij_idea
+max_line_length = 240
+indent_size = 4
+insert_final_newline = true
+
+[*.{xml,toml,properties}]
+indent_size = 4
+insert_final_newline = true
