@@ -15,6 +15,8 @@ data class DebitNote(
 
     val printableStatutory: List<ChargeLine> get() = statutory.filter { it.isPrintable }
 
+    val hasCharges: Boolean get() = printableStatutory.isNotEmpty() || printableOther.isNotEmpty()
+
     val showsAdvance: Boolean get() = advanceReceived != null
 
     val subTotal: BigDecimal get() = (printableStatutory + printableOther).fold(BigDecimal.ZERO) { sum, line -> sum + line.amount!! }

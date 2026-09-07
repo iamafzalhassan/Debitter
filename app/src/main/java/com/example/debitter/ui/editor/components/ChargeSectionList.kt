@@ -1,9 +1,6 @@
 package com.example.debitter.ui.editor.components
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,44 +9,34 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.zIndex
 import com.example.debitter.model.ChargeLine
 import com.example.debitter.model.ChargeSection
+import com.example.debitter.ui.components.AmountField
+import com.example.debitter.ui.components.AppPlainField
 import com.example.debitter.ui.components.SecondaryButton
 import com.example.debitter.ui.components.SectionHeader
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
-import com.example.debitter.ui.theme.AppTextStyles
-import com.example.debitter.util.MoneyFormat
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
@@ -57,13 +44,13 @@ private const val NO_DRAG: Int = -1
 
 @Composable
 fun ChargeSectionList(
+    addLabel: String,
     heading: String,
     lines: List<ChargeLine>,
     onAdd: () -> Unit,
     onAmountChange: (ChargeLine, BigDecimal?) -> Unit,
     onLabelChange: (ChargeLine, String) -> Unit,
     onMove: (Int, Int) -> Unit,
-    onRemove: (ChargeLine) -> Unit,
     section: ChargeSection,
     modifier: Modifier = Modifier,
 ) {
@@ -82,11 +69,12 @@ fun ChargeSectionList(
                 val isDragging = index == dragIndex
                 val shift by animateFloatAsState(targetValue = shiftFor(index, dragIndex, target, stride), label = "shift")
 
-                ChargeRow(
-                    modifier = Modifier
-                        .zIndex(if (isDragging) 1f else 0f)
-                        .graphicsLayer { translationY = if (isDragging) dragOffset else shift }
-                        .pointerInput(index, lines.size) {
+                key(line.id) {
+                    ChargeRow(
+                        modifier = Modifier
+                            .zIndex(if (isDragging) 1f else 0f)
+                            .graphicsLayer { translationY = if (isDragging) dragOffset else shift },
+                        dragModifier = Modifier.pointerInput(index, lines.size) {
                             detectDragGesturesAfterLongPress(
                                 onDragStart = {
                                     dragIndex = index
@@ -109,84 +97,46 @@ fun ChargeSectionList(
                                 },
                             )
                         },
-                    isDragging = isDragging,
-                    line = line,
-                    onAmountChange = { onAmountChange(line, it) },
-                    onLabelChange = { onLabelChange(line, it) },
-                    onRemove = { onRemove(line) },
-                )
+                        isDragging = isDragging,
+                        onAmountChange = { onAmountChange(line, it) },
+                        onLabelChange = { onLabelChange(line, it) },
+                        line = line,
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(AppSpacing.md))
-        SecondaryButton(modifier = Modifier.fillMaxWidth(), label = "Add row", onClick = onAdd)
+        SecondaryButton(modifier = Modifier.fillMaxWidth(), label = addLabel, onClick = onAdd)
     }
 }
 
 @Composable
 private fun ChargeRow(
     isDragging: Boolean,
+    dragModifier: Modifier,
     onAmountChange: (BigDecimal?) -> Unit,
     onLabelChange: (String) -> Unit,
-    onRemove: () -> Unit,
     line: ChargeLine,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(AppSpacing.radiusCard)
-
-    var amountText by remember(line.id) { mutableStateOf(line.amount?.toPlainString().orEmpty()) }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(AppSpacing.chargeRowHeight)
-            .clip(shape)
-            .background(AppColors.surfaceCard)
-            .border(border = BorderStroke(AppSpacing.hairline, if (isDragging) AppColors.primary else AppColors.divider), shape = shape)
-            .padding(horizontal = AppSpacing.cardPadding, vertical = AppSpacing.sm),
-        verticalArrangement = Arrangement.SpaceEvenly,
+    Row(
+        modifier = modifier.fillMaxWidth().height(AppSpacing.controlHeight),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicTextField(
-                modifier = Modifier.weight(1f),
-                cursorBrush = SolidColor(AppColors.primary),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                onValueChange = onLabelChange,
-                singleLine = true,
-                textStyle = AppTextStyles.listPrimary,
-                value = line.label,
+        Box(
+            modifier = dragModifier.width(AppSpacing.dragHandle).height(AppSpacing.controlHeight),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                modifier = Modifier.size(AppSpacing.iconTile),
+                contentDescription = "Reorder",
+                imageVector = Icons.Filled.Menu,
+                tint = if (isDragging) AppColors.primary else AppColors.textTertiary,
             )
-            IconButton(modifier = Modifier.size(AppSpacing.iconButtonSize), onClick = onRemove) {
-                Icon(
-                    contentDescription = "Delete row",
-                    imageVector = Icons.Filled.Close,
-                    modifier = Modifier.size(AppSpacing.iconButton),
-                    tint = AppColors.textTertiary,
-                )
-            }
         }
-        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .width(AppSpacing.amountColumn)
-                    .clip(RoundedCornerShape(AppSpacing.radiusField))
-                    .background(AppColors.surfaceField)
-                    .padding(horizontal = AppSpacing.sm, vertical = AppSpacing.xs),
-            ) {
-                BasicTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    cursorBrush = SolidColor(AppColors.primary),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    onValueChange = { raw ->
-                        val cleaned = MoneyFormat.sanitize(raw)
-                        amountText = cleaned
-                        onAmountChange(MoneyFormat.parse(cleaned))
-                    },
-                    singleLine = true,
-                    textStyle = AppTextStyles.amount.copy(textAlign = TextAlign.End),
-                    value = amountText,
-                )
-            }
-        }
+        AppPlainField(modifier = Modifier.weight(1f), onValueChange = onLabelChange, value = line.label)
+        AmountField(modifier = Modifier.width(AppSpacing.amountField), onValueChange = onAmountChange, value = line.amount)
     }
 }
 

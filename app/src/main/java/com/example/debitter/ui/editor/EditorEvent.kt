@@ -14,8 +14,6 @@ sealed interface EditorEvent {
 
     data class MoveCharge(val from: Int, val to: Int, val section: ChargeSection) : EditorEvent
 
-    data class RemoveCharge(val section: ChargeSection, val id: UUID) : EditorEvent
-
     data object Reset : EditorEvent
 
     data class SetAdvance(val amount: BigDecimal?) : EditorEvent

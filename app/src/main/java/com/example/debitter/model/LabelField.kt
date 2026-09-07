@@ -1,21 +1,21 @@
 package com.example.debitter.model
 
 enum class LabelField(val caption: String) {
-    TITLE("Document title"),
-    DATE("Date label"),
-    BILL_TO("To label"),
-    VESSEL_FLIGHT("Vessel/Flight label"),
-    CUSTOMS_ENTRY("Customs Entry label"),
-    CONTAINER_NO("Container No label"),
-    BL_AWB_NO("BL/AWB No label"),
-    VOYAGE_NO_DATE("Voyage No/Date label"),
-    CONSIGNMENT("Consignment label"),
-    STATUTORY_SECTION("Statutory section heading"),
-    OTHER_SECTION("Other section heading"),
-    SUB_TOTAL("Sub Total label"),
-    ADVANCE_RECEIVED("Advanced Received label"),
-    TOTAL("Total label"),
-    SIGNATURE("Signature caption"),
+    TITLE("Document Title"),
+    DATE("Date Label"),
+    BILL_TO("To Label"),
+    VESSEL_FLIGHT("Vessel/Flight Label"),
+    CUSTOMS_ENTRY("Customs Entry Label"),
+    CONTAINER_NO("Container No Label"),
+    BL_AWB_NO("BL/AWB No Label"),
+    VOYAGE_NO_DATE("Voyage No/Date Label"),
+    CONSIGNMENT("Consignment Label"),
+    STATUTORY_SECTION("Statutory Section Heading"),
+    OTHER_SECTION("Other Section Heading"),
+    SUB_TOTAL("Sub Total Label"),
+    ADVANCE_RECEIVED("Advanced Received Label"),
+    TOTAL("Total Label"),
+    SIGNATURE("Signature Caption"),
 }
 
 fun NoteLabels.value(field: LabelField): String = when (field) {

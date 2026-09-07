@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,8 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,8 +43,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.DebitNote
 import com.example.debitter.pdf.PdfExporter
+import com.example.debitter.ui.components.AppSnackbarHost
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
+import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
@@ -63,7 +64,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
     val context = LocalContext.current
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarState = rememberAppSnackbarState()
     val document by produceState<PreviewDocument?>(initialValue = null, exporter, note) {
         value = withContext(Dispatchers.Default) { renderDocument(exporter, note) }
     }
@@ -80,7 +81,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
                     val bytes = document?.bytes ?: return@PreviewActions
                     scope.launch {
                         val location = withContext(Dispatchers.IO) { exporter.saveToDownloads(bytes, exporter.fileName()) }
-                        snackbarHostState.showSnackbar("Saved to $location")
+                        snackbarState.showSuccess("Saved to $location")
                     }
                 },
                 onShare = {
@@ -91,7 +92,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
             )
         },
         containerColor = AppColors.surfaceSunken,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(state = snackbarState) },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
@@ -108,7 +109,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
 
         if (pages == null) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
-                CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.emptyStateIcon))
+                CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.progressLarge), strokeWidth = AppSpacing.progressStroke)
             }
             return@Scaffold
         }
@@ -132,16 +133,18 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
 
 @Composable
 private fun PreviewActions(isEnabled: Boolean, onPrint: () -> Unit, onSave: () -> Unit, onShare: () -> Unit, modifier: Modifier = Modifier) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .background(AppColors.surfaceBase)
             .padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.md),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
     ) {
-        SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Share", onClick = onShare)
-        SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Print", onClick = onPrint)
-        PrimaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Save", onClick = onSave)
+        PrimaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Save", onClick = onSave)
+        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), modifier = Modifier.fillMaxWidth()) {
+            SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Share", onClick = onShare)
+            SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Print", onClick = onPrint)
+        }
     }
 }
 

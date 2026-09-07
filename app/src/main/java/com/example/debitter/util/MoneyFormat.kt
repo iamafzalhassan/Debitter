@@ -8,12 +8,15 @@ import java.util.Locale
 
 object MoneyFormat {
     private const val MAX_DIGITS: Int = 12
+    const val SCALE: Int = 2
 
     private const val PATTERN: String = "#,##0.00"
 
+    val zero: BigDecimal = BigDecimal.ZERO.setScale(SCALE)
+
     private val formatter: DecimalFormat = DecimalFormat(PATTERN, DecimalFormatSymbols(Locale.US))
 
-    fun format(amount: BigDecimal): String = formatter.format(amount.setScale(2, RoundingMode.HALF_UP))
+    fun format(amount: BigDecimal): String = formatter.format(amount.setScale(SCALE, RoundingMode.HALF_UP))
 
     fun parse(input: String): BigDecimal? {
         val cleaned = input.filter { it.isDigit() || it == '.' }.trimEnd('.')

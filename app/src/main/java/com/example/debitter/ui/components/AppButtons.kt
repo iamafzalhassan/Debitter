@@ -48,3 +48,18 @@ fun SecondaryButton(label: String, onClick: () -> Unit, modifier: Modifier = Mod
         Text(maxLines = 1, style = AppTextStyles.button.copy(color = if (isEnabled) AppColors.primary else AppColors.textDisabled), text = label)
     }
 }
+
+@Composable
+fun DangerButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier, isEnabled: Boolean = true) {
+    OutlinedButton(
+        modifier = modifier.height(AppSpacing.buttonHeight),
+        border = BorderStroke(AppSpacing.hairline, AppColors.danger),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.danger, disabledContentColor = AppColors.textDisabled),
+        contentPadding = PaddingValues(horizontal = AppSpacing.lg),
+        enabled = isEnabled,
+        onClick = onClick,
+        shape = RoundedCornerShape(AppSpacing.radiusButton),
+    ) {
+        Text(maxLines = 1, style = AppTextStyles.button.copy(color = AppColors.danger), text = label)
+    }
+}

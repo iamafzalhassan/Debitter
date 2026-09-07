@@ -29,7 +29,6 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
         when (event) {
             is EditorEvent.AddCharge -> updateLines(event.section) { it + ChargeLine.empty() }
             is EditorEvent.MoveCharge -> updateLines(event.section) { move(it, event.from, event.to) }
-            is EditorEvent.RemoveCharge -> updateLines(event.section) { lines -> lines.filterNot { it.id == event.id } }
             is EditorEvent.Reset -> update { initial() }
             is EditorEvent.SetAdvance -> updateNote { it.copy(advanceReceived = event.amount) }
             is EditorEvent.SetChargeAmount -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(amount = event.amount) else it } }
@@ -69,7 +68,7 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
         val incomingSet = incoming.toSet()
         val byLabel = current.associateBy { it.label }
         val rostered = incoming.map { byLabel[it] ?: ChargeLine.empty(it) }
-        val carried = current.filter { it.label !in incomingSet && (it.label !in outgoing || it.amount != null) }
+        val carried = current.filter { it.label !in incomingSet && (it.label !in outgoing || it.isPrintable) }
 
         return rostered + carried
     }

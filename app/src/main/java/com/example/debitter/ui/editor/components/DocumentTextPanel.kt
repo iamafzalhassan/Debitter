@@ -67,7 +67,7 @@ fun DocumentTextPanel(
             Column(modifier = Modifier.weight(1f)) {
                 Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listPrimary, text = "Document text")
                 Spacer(modifier = Modifier.height(AppSpacing.xxs))
-                Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listSecondary, text = "Company block, title, every printed label")
+                Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listSecondary, text = "Company Block, Title, Every Printed Label")
             }
             Icon(
                 modifier = Modifier.size(AppSpacing.iconPlaceholder).rotate(rotation),
