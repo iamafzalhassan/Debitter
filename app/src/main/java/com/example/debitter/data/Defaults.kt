@@ -17,21 +17,22 @@ object Defaults {
     )
 
     val labels: NoteLabels = NoteLabels(
-        advanceReceived = "Advanced Received",
-        billTo = "To",
-        blAwbNo = "BL/AWB No",
-        consignment = "Consignment",
-        containerNo = "Container No",
-        customsEntry = "Customs Entry",
-        date = "Date",
-        otherSection = "Other",
-        signature = "Proprietor's Signature.",
-        statutorySection = "Statutory",
-        subTotal = "Sub Total",
-        title = "D E B I T   N O T E",
-        total = "Total",
-        vesselFlight = "Vessel/Flight",
-        voyageNoDate = "Voyage No/Date",
+        advanceReceived = "ADVANCED RECEIVED",
+        billTo = "TO",
+        blAwbNo = "BL/AWB NO",
+        chargeSuffix = "CHARGES",
+        consignment = "CONSIGNMENT",
+        containerNo = "CONTAINER NO",
+        customsEntry = "CUSTOMS ENTRY",
+        date = "DATE",
+        otherSection = "OTHER",
+        signature = "PROPRIETOR'S SIGNATURE.",
+        statutorySection = "STATUTORY",
+        subTotal = "SUB TOTAL",
+        title = "DEBIT NOTE",
+        total = "TOTAL",
+        vesselFlight = "VESSEL/FLIGHT",
+        voyageNoDate = "VOYAGE NO/DATE",
     )
 
     val shipmentType: ShipmentType = ShipmentType.CONTAINER
@@ -45,7 +46,7 @@ object Defaults {
         labels = labels,
     )
 
-    fun lines(section: ChargeSection, type: ShipmentType): List<ChargeLine> = ChargePresets.labels(section, type).map { ChargeLine.empty(it) }
+    fun lines(section: ChargeSection, type: ShipmentType): List<ChargeLine> = ChargePresets.labels(section, type).map { ChargeLine.preset(label = it, appendsSuffix = ChargePresets.appendsSuffix(it)) }
 
     private fun header(today: LocalDate): NoteHeader = NoteHeader(
         billTo = "",

@@ -6,6 +6,7 @@ data class NoteLabels(
     val advanceReceived: String,
     val billTo: String,
     val blAwbNo: String,
+    val chargeSuffix: String,
     val consignment: String,
     val containerNo: String,
     val customsEntry: String,

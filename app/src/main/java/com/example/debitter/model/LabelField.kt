@@ -12,6 +12,7 @@ enum class LabelField(val caption: String) {
     CONSIGNMENT("Consignment Label"),
     STATUTORY_SECTION("Statutory Section Heading"),
     OTHER_SECTION("Other Section Heading"),
+    CHARGE_SUFFIX("Charge Word"),
     SUB_TOTAL("Sub Total Label"),
     ADVANCE_RECEIVED("Advanced Received Label"),
     TOTAL("Total Label"),
@@ -22,6 +23,7 @@ fun NoteLabels.value(field: LabelField): String = when (field) {
     LabelField.ADVANCE_RECEIVED -> advanceReceived
     LabelField.BILL_TO -> billTo
     LabelField.BL_AWB_NO -> blAwbNo
+    LabelField.CHARGE_SUFFIX -> chargeSuffix
     LabelField.CONSIGNMENT -> consignment
     LabelField.CONTAINER_NO -> containerNo
     LabelField.CUSTOMS_ENTRY -> customsEntry
@@ -40,6 +42,7 @@ fun NoteLabels.with(field: LabelField, value: String): NoteLabels = when (field)
     LabelField.ADVANCE_RECEIVED -> copy(advanceReceived = value)
     LabelField.BILL_TO -> copy(billTo = value)
     LabelField.BL_AWB_NO -> copy(blAwbNo = value)
+    LabelField.CHARGE_SUFFIX -> copy(chargeSuffix = value)
     LabelField.CONSIGNMENT -> copy(consignment = value)
     LabelField.CONTAINER_NO -> copy(containerNo = value)
     LabelField.CUSTOMS_ENTRY -> copy(customsEntry = value)

@@ -5,45 +5,47 @@ import com.example.debitter.model.ShipmentType
 
 object ChargePresets {
     private val commonOther: List<String> = listOf(
-        "Documentation charges",
-        "Examination expenses",
-        "Entry Passing expenses",
-        "Handling charges",
-        "Missalation expenses",
-        "Screening Unit expenses",
-        "Transport charges",
-        "Transport Detention",
-        "Valuation expenses",
+        "DOCUMENTATION",
+        "EXAMINATION",
+        "ENTRY PASSING",
+        "HANDLING",
+        "MISSALATION",
+        "SCREENING UNIT",
+        "TRANSPORT",
+        "TRANSPORT DETENTION",
+        "VALUATION",
     )
 
     private val commonStatutory: List<String> = listOf(
-        "Agency Fee / Service",
-        "Agent DO charges",
-        "Animal Quarantine charges",
-        "Container Demurrage charges",
-        "Container OT charges",
-        "Container Weight charges",
-        "Customs Duty",
-        "Customs OT",
-        "Grayline charges",
-        "Import Control charges",
-        "SLPA charges",
-        "SLSI charges",
+        "AGENCY FEE / SERVICE",
+        "AGENT DO",
+        "ANIMAL QUARANTINE",
+        "CONTAINER DEMURRAGE",
+        "CONTAINER OT",
+        "CONTAINER WEIGHT",
+        "CUSTOMS DUTY",
+        "CUSTOMS OT",
+        "GRAYLINE",
+        "IMPORT CONTROL",
+        "SLPA",
+        "SLSI",
     )
+
+    private val terminal: Set<String> = setOf("AGENCY FEE / SERVICE", "CUSTOMS DUTY", "CUSTOMS OT", "TRANSPORT DETENTION")
 
     private val otherAdditions: Map<ShipmentType, List<String>> = mapOf(
         ShipmentType.AIR_FREIGHT to emptyList(),
         ShipmentType.BLANK to emptyList(),
         ShipmentType.CONTAINER to emptyList(),
         ShipmentType.LCL to emptyList(),
-        ShipmentType.PERSONAL to listOf("Clearance expenses", "Freight charges", "Unloading expenses"),
+        ShipmentType.PERSONAL to listOf("CLEARANCE", "FREIGHT", "UNLOADING"),
     )
 
     private val statutoryAdditions: Map<ShipmentType, List<String>> = mapOf(
-        ShipmentType.AIR_FREIGHT to listOf("Air Lanka charges", "Air Line DO charges", "Freight charges"),
+        ShipmentType.AIR_FREIGHT to listOf("AIR LANKA", "AIR LINE DO", "FREIGHT"),
         ShipmentType.BLANK to emptyList(),
-        ShipmentType.CONTAINER to listOf("Freight charges"),
-        ShipmentType.LCL to listOf("Freight charges"),
+        ShipmentType.CONTAINER to listOf("FREIGHT"),
+        ShipmentType.LCL to listOf("FREIGHT"),
         ShipmentType.PERSONAL to emptyList(),
     )
 
@@ -51,4 +53,6 @@ object ChargePresets {
         ChargeSection.OTHER -> commonOther + otherAdditions.getValue(type)
         ChargeSection.STATUTORY -> commonStatutory + statutoryAdditions.getValue(type)
     }
+
+    fun appendsSuffix(label: String): Boolean = label !in terminal
 }

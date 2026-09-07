@@ -3,7 +3,6 @@ package com.example.debitter.util
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -19,8 +18,4 @@ object DateFormat {
     fun format(date: LocalDate?): String = date?.format(formatter).orEmpty()
 
     fun stamp(instant: Instant): String = fileFormatter.format(instant)
-
-    fun toEpochMillis(date: LocalDate?): Long? = date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
-
-    fun fromEpochMillis(millis: Long?): LocalDate? = millis?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
 }

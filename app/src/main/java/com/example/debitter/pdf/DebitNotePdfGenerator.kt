@@ -21,8 +21,8 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         drawCompany(sheet, note)
         drawTitle(sheet, note)
         drawHeader(sheet, note.labels, note.header)
-        drawCharges(sheet, note.labels.statutorySection, note.printableStatutory)
-        drawCharges(sheet, note.labels.otherSection, note.printableOther)
+        drawCharges(sheet, note.labels.statutorySection, note.printableStatutory, note.labels.chargeSuffix)
+        drawCharges(sheet, note.labels.otherSection, note.printableOther, note.labels.chargeSuffix)
         drawTotals(sheet, note)
         drawSignature(sheet, note.labels.signature)
         sheet.finish()
@@ -84,7 +84,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         sheet.y += height
     }
 
-    private fun drawCharges(sheet: Sheet, heading: String, lines: List<ChargeLine>) {
+    private fun drawCharges(sheet: Sheet, heading: String, lines: List<ChargeLine>, suffix: String) {
         if (lines.isEmpty()) return
 
         sheet.ensure(PdfLayout.BAND_HEIGHT + PdfLayout.CHARGE_ROW_HEIGHT)
@@ -92,12 +92,12 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         sheet.canvas.drawText(heading, layout.chargeLabelLeft, layout.baseline(sheet.y, PdfLayout.BAND_HEIGHT, layout.sectionPaint), layout.sectionPaint)
         sheet.y += PdfLayout.BAND_HEIGHT
 
-        for (line in lines) drawChargeRow(sheet, line)
+        for (line in lines) drawChargeRow(sheet, line, suffix)
         drawRule(sheet, layout.rulePaint)
     }
 
-    private fun drawChargeRow(sheet: Sheet, line: ChargeLine) {
-        val wrapped = layout.wrap(line.label, layout.chargeLabelPaint, layout.chargeLabelWidth)
+    private fun drawChargeRow(sheet: Sheet, line: ChargeLine, suffix: String) {
+        val wrapped = layout.wrap(line.printedLabel(suffix), layout.chargeLabelPaint, layout.chargeLabelWidth)
         val lineHeight = layout.lineHeight(layout.chargeLabelPaint)
         val height = maxOf(PdfLayout.CHARGE_ROW_HEIGHT, wrapped.size * lineHeight)
 
