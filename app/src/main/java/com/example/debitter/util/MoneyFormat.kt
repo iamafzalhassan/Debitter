@@ -17,9 +17,9 @@ object MoneyFormat {
 
     val zero: BigDecimal = BigDecimal.ZERO.setScale(SCALE)
 
-    private val formatter: DecimalFormat = DecimalFormat(PATTERN, DecimalFormatSymbols(Locale.US))
+    private val formatter: ThreadLocal<DecimalFormat> = ThreadLocal.withInitial { DecimalFormat(PATTERN, DecimalFormatSymbols(Locale.US)) }
 
-    fun format(amount: BigDecimal): String = formatter.format(amount.setScale(SCALE, RoundingMode.HALF_UP))
+    fun format(amount: BigDecimal): String = decimalFormat().format(amount.setScale(SCALE, RoundingMode.HALF_UP))
 
     fun plain(amount: BigDecimal?): String = amount?.setScale(SCALE, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
 
@@ -41,4 +41,6 @@ object MoneyFormat {
         if (cleaned.isEmpty()) return null
         return cleaned.toBigDecimalOrNull()
     }
+
+    private fun decimalFormat(): DecimalFormat = formatter.get()
 }

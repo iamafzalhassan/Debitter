@@ -50,6 +50,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
     private fun paint(sheet: Sheet, note: DebitNote) {
         sheet.start()
         drawLetterhead(sheet, note)
+        drawTitle(sheet, note.labels.title)
         drawHeader(sheet, note.labels, note.header)
         drawTable(sheet, note)
         drawSignature(sheet, note.labels.signature)
@@ -60,11 +61,9 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         val top = sheet.y
 
         sheet.canvas.drawText(block.name, layout.contentLeft, layout.baseline(top, layout.lineHeight(layout.companyNamePaint), layout.companyNamePaint), layout.companyNamePaint)
-        sheet.canvas.drawText(note.labels.title, layout.contentRight, layout.baseline(top, layout.lineHeight(layout.titlePaint), layout.titlePaint), layout.titlePaint)
         sheet.y = top + layout.lineHeight(layout.companyNamePaint) + PdfLayout.GAP_XS
         drawDetail(sheet, block.addressLine)
         drawDetail(sheet, block.contactLine)
-        sheet.y = maxOf(sheet.y, top + layout.lineHeight(layout.titlePaint))
         sheet.y += PdfLayout.GAP_MD
         drawRule(sheet, layout.ruleStrongPaint)
         sheet.y += PdfLayout.GAP_MD
@@ -77,6 +76,15 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
 
         sheet.canvas.drawText(text, layout.contentLeft, layout.baseline(sheet.y, height, layout.companyDetailPaint), layout.companyDetailPaint)
         sheet.y += height
+    }
+
+    private fun drawTitle(sheet: Sheet, title: String) {
+        if (title.isBlank()) return
+
+        val height = layout.lineHeight(layout.titlePaint)
+
+        sheet.canvas.drawText(title, layout.contentCenterX, layout.baseline(sheet.y, height, layout.titlePaint), layout.titlePaint)
+        sheet.y += height + PdfLayout.GAP_MD
     }
 
     private fun drawHeader(sheet: Sheet, labels: NoteLabels, header: NoteHeader) {
@@ -167,8 +175,10 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
     private fun drawTotals(sheet: Sheet, note: DebitNote) {
         val rowCount = if (note.showsAdvance) 3 else 2
         val height = rowCount * (PdfLayout.TOTALS_ROW_HEIGHT + PdfLayout.RULE_THIN)
+        val page = sheet.number
 
         sheet.ensure(height)
+        if (sheet.number != page) drawRule(sheet, layout.rulePaint)
         drawTotalsRow(sheet, note.labels.subTotal, note.subTotal, layout.totalsValuePaint)
         if (note.showsAdvance) drawTotalsRow(sheet, note.labels.advanceReceived, note.advanceReceived ?: BigDecimal.ZERO, layout.totalsValuePaint)
         drawTotalsRow(sheet, note.labels.total, note.total, layout.totalsValueBoldPaint)

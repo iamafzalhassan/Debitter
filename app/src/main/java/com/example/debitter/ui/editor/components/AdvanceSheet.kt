@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.debitter.ui.components.AmountField
@@ -24,11 +25,14 @@ import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
 import com.example.debitter.util.MoneyFormat
 import java.math.BigDecimal
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecimal) -> Unit, advance: BigDecimal?, subTotal: BigDecimal) {
+fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecimal) -> Unit, subTotal: BigDecimal, advance: BigDecimal?) {
+    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
+    val hideThen: (() -> Unit) -> Unit = { action -> scope.launch { sheetState.hide() }.invokeOnCompletion { action() } }
 
     var draft by remember { mutableStateOf(advance) }
 
@@ -45,7 +49,7 @@ fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecima
             AmountField(
                 modifier = Modifier.fillMaxWidth(),
                 isAutoFocused = true,
-                onSubmit = { if (isValid) onSave(amount) },
+                onSubmit = { if (isValid) hideThen({ onSave(amount) }) },
                 onValueChange = { draft = it },
                 value = advance,
             )
@@ -55,12 +59,19 @@ fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecima
             }
             Spacer(modifier = Modifier.height(AppSpacing.lg))
             SheetActions(
-                primary = { PrimaryButton(modifier = Modifier.weight(1f), isEnabled = isValid, label = "Add Advance", onClick = { onSave(amount) }) },
+                primary = {
+                    PrimaryButton(
+                        modifier = Modifier.weight(1f),
+                        isEnabled = isValid,
+                        label = if (advance == null) "Add Advance" else "Save Advance",
+                        onClick = { hideThen({ onSave(amount) }) },
+                    )
+                },
                 secondary = {
                     DangerButton(
                         modifier = Modifier.weight(1f),
                         label = if (advance == null) "Cancel" else "Remove",
-                        onClick = if (advance == null) onDismiss else onRemove,
+                        onClick = { hideThen(if (advance == null) onDismiss else onRemove) },
                     )
                 },
             )

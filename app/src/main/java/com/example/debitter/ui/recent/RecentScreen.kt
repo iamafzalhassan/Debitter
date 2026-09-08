@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.SavedNote
 import com.example.debitter.pdf.PdfExporter
+import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
 import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.recent.components.NoteActionsSheet
@@ -59,7 +60,7 @@ private const val NOTE_LINES: Int = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentScreen(onBack: () -> Unit, onDelete: (String) -> Unit, onEdit: (SavedNote) -> Unit, onMessageShown: () -> Unit, message: String?, state: RecentState, modifier: Modifier = Modifier) {
+fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Unit, onEdit: (SavedNote) -> Unit, onDelete: (String) -> Unit, state: RecentState, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
@@ -69,8 +70,8 @@ fun RecentScreen(onBack: () -> Unit, onDelete: (String) -> Unit, onEdit: (SavedN
 
     LaunchedEffect(message) {
         if (message == null) return@LaunchedEffect
-        snackbarState.showSuccess(message)
         onMessageShown()
+        scope.launch { snackbarState.showSuccess(message) }
     }
 
     Scaffold(
@@ -92,12 +93,12 @@ fun RecentScreen(onBack: () -> Unit, onDelete: (String) -> Unit, onEdit: (SavedN
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             RetentionNote()
             when {
-                state.isLoading -> Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.progressIndicator), strokeWidth = AppSpacing.progressStroke)
+                state.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(modifier = Modifier.size(AppSpacing.progressIndicator), color = AppColors.primary, strokeWidth = AppSpacing.progressStroke)
                 }
                 state.notes.isEmpty() -> EmptyState()
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(bottom = AppSpacing.xl, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding, top = AppSpacing.lg),
+                    contentPadding = PaddingValues(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                 ) {
@@ -132,7 +133,7 @@ fun RecentScreen(onBack: () -> Unit, onDelete: (String) -> Unit, onEdit: (SavedN
                         snackbarState.showError("That copy could not be saved to Downloads. Check the phone storage and try again.")
                         return@launch
                     }
-                    snackbarState.showSuccess("Copy saved to Downloads. Open it from your Files app under Downloads.")
+                    snackbarState.showSuccess(locationMessage(location))
                 }
             },
             onShare = {
@@ -160,9 +161,9 @@ private fun RetentionNote(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
+                modifier = Modifier.size(AppSpacing.iconHint),
                 contentDescription = null,
                 imageVector = Icons.Outlined.Schedule,
-                modifier = Modifier.size(AppSpacing.iconHint),
                 tint = AppColors.textSecondary,
             )
             Spacer(modifier = Modifier.size(AppSpacing.sm))
@@ -185,13 +186,13 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            contentAlignment = Alignment.Center,
             modifier = Modifier.size(AppSpacing.emptyStateIcon).clip(CircleShape).background(AppColors.surfaceField),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
+                modifier = Modifier.size(AppSpacing.iconEmptyState),
                 contentDescription = null,
                 imageVector = Icons.Outlined.ReceiptLong,
-                modifier = Modifier.size(AppSpacing.iconEmptyState),
                 tint = AppColors.textTertiary,
             )
         }
@@ -204,4 +205,10 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             textAlign = TextAlign.Center,
         )
     }
+}
+
+private fun locationMessage(location: SaveLocation): String = if (location.isShared) {
+    "Copy saved to Downloads. Open it from your Files app under Downloads."
+} else {
+    "Copy saved to the app's own Downloads folder. This version of Android blocks the shared one, so use Share to send it out."
 }

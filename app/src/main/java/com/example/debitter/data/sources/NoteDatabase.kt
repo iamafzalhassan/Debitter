@@ -31,8 +31,8 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
 
     fun upsert(row: NoteRow) {
         val values = ContentValues().apply {
-            put(COLUMN_BILL_TO, row.billTo)
             put(COLUMN_CREATED_AT, row.createdAt)
+            put(COLUMN_BILL_TO, row.billTo)
             put(COLUMN_ID, row.id)
             put(COLUMN_PAYLOAD, row.payload)
             put(COLUMN_TOTAL, row.total)

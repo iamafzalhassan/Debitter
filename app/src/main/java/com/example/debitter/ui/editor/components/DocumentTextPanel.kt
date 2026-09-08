@@ -42,9 +42,9 @@ private const val HALF_TURN: Float = 180f
 @Composable
 fun DocumentTextPanel(
     isExpanded: Boolean,
+    onToggle: () -> Unit,
     onCompanyChange: (CompanyField, String) -> Unit,
     onLabelChange: (LabelField, String) -> Unit,
-    onToggle: () -> Unit,
     company: CompanyBlock,
     labels: NoteLabels,
     modifier: Modifier = Modifier,
@@ -77,7 +77,7 @@ fun DocumentTextPanel(
         }
         AnimatedVisibility(visible = isExpanded) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(start = AppSpacing.lg, end = AppSpacing.lg, bottom = AppSpacing.lg),
+                modifier = Modifier.fillMaxWidth().padding(bottom = AppSpacing.lg, end = AppSpacing.lg, start = AppSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
             ) {
                 Spacer(modifier = Modifier.height(AppSpacing.xs))

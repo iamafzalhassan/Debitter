@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
+import java.util.Locale
 
 @Composable
 fun AppTextField(
@@ -41,7 +42,7 @@ fun AppTextField(
 ) {
     val focusManager = LocalFocusManager.current
 
-    FieldFrame(label = label, modifier = modifier, textAlign = textAlign) {
+    FieldFrame(modifier = modifier, label = label, textAlign = textAlign) {
         BasicTextField(
             modifier = Modifier.fillMaxWidth(),
             cursorBrush = SolidColor(AppColors.primary),
@@ -51,7 +52,7 @@ fun AppTextField(
                 imeAction = if (singleLine) ImeAction.Done else ImeAction.Default,
                 keyboardType = keyboardType,
             ),
-            onValueChange = { onValueChange(it.uppercase()) },
+            onValueChange = { onValueChange(it.uppercase(Locale.ROOT)) },
             singleLine = singleLine,
             textStyle = AppTextStyles.fieldValue.copy(textAlign = textAlign),
             value = value,
@@ -61,7 +62,7 @@ fun AppTextField(
 
 @Composable
 fun AppStaticField(label: String, value: String, modifier: Modifier = Modifier) {
-    FieldFrame(label = label, modifier = modifier, textAlign = TextAlign.Start) {
+    FieldFrame(modifier = modifier, label = label, textAlign = TextAlign.Start) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             maxLines = 1,
@@ -73,7 +74,7 @@ fun AppStaticField(label: String, value: String, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun AppPlainField(onValueChange: (String) -> Unit, value: String, modifier: Modifier = Modifier) {
+fun AppPlainField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
     val focusManager = LocalFocusManager.current
     val shape = RoundedCornerShape(AppSpacing.radiusField)
 
@@ -90,7 +91,7 @@ fun AppPlainField(onValueChange: (String) -> Unit, value: String, modifier: Modi
             cursorBrush = SolidColor(AppColors.primary),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Done),
-            onValueChange = { onValueChange(it.uppercase()) },
+            onValueChange = { onValueChange(it.uppercase(Locale.ROOT)) },
             singleLine = true,
             textStyle = AppTextStyles.fieldValue,
             value = value,

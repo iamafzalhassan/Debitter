@@ -1,10 +1,12 @@
 package com.example.debitter.model
 
+import androidx.compose.runtime.Immutable
 import com.example.debitter.util.MoneyFormat
 import java.io.Serializable
 import java.math.BigDecimal
 import java.util.UUID
 
+@Immutable
 data class ChargeLine(val appendsSuffix: Boolean, val label: String, val amount: BigDecimal?, val id: UUID) : Serializable {
     companion object {
         fun preset(label: String, appendsSuffix: Boolean): ChargeLine = ChargeLine(appendsSuffix = appendsSuffix, label = label, amount = MoneyFormat.zero, id = UUID.randomUUID())

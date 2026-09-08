@@ -37,9 +37,9 @@ fun TotalsBlock(
     subTotalLabel: String,
     totalLabel: String,
     onAdvanceTap: () -> Unit,
-    advance: BigDecimal?,
     subTotal: BigDecimal,
     total: BigDecimal,
+    advance: BigDecimal?,
     modifier: Modifier = Modifier,
 ) {
     Column(

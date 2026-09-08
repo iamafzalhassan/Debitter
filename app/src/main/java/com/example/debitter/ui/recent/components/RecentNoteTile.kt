@@ -45,7 +45,7 @@ fun RecentNoteTile(onClick: () -> Unit, saved: SavedNote, modifier: Modifier = M
         Text(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = AppTextStyles.listSecondary,
+            style = AppTextStyles.listMeta,
             text = RecentDateFormat.format(saved.createdAt),
         )
         Spacer(modifier = Modifier.height(AppSpacing.sm))

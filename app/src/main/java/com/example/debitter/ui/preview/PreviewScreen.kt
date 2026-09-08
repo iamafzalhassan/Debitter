@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.DebitNote
 import com.example.debitter.pdf.PdfExporter
+import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
@@ -61,7 +62,7 @@ private const val PREVIEW_SCALE: Int = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PreviewScreen(onBack: () -> Unit, onSaved: (String) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
+fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
@@ -118,8 +119,8 @@ fun PreviewScreen(onBack: () -> Unit, onSaved: (String) -> Unit, note: DebitNote
         val pages = document?.pages
 
         if (pages == null) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
-                CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.progressIndicator), strokeWidth = AppSpacing.progressStroke)
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(AppSpacing.progressIndicator), color = AppColors.primary, strokeWidth = AppSpacing.progressStroke)
             }
             return@Scaffold
         }

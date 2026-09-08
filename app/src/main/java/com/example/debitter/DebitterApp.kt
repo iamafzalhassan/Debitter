@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.editor.EditorEvent
 import com.example.debitter.ui.editor.EditorScreen
 import com.example.debitter.ui.editor.EditorViewModel
@@ -19,9 +20,7 @@ import com.example.debitter.ui.recent.RecentScreen
 import com.example.debitter.ui.recent.RecentViewModel
 
 private const val ROUTE_EDITOR: String = "editor"
-
 private const val ROUTE_PREVIEW: String = "preview"
-
 private const val ROUTE_RECENT: String = "recent"
 
 @Composable
@@ -30,42 +29,46 @@ fun DebitterApp() {
     val editorViewModel: EditorViewModel = viewModel()
     val recentViewModel: RecentViewModel = viewModel(factory = RecentViewModel.factory(context))
     val navController = rememberNavController()
-    val editorState by editorViewModel.state.collectAsStateWithLifecycle()
-    val recentState by recentViewModel.state.collectAsStateWithLifecycle()
 
     var savedMessage by remember { mutableStateOf<String?>(null) }
 
     NavHost(navController = navController, startDestination = ROUTE_EDITOR) {
         composable(ROUTE_EDITOR) {
+            val editorState by editorViewModel.state.collectAsStateWithLifecycle()
+
             EditorScreen(
-                state = editorState,
-                onEvent = editorViewModel::onEvent,
                 onPreview = { navController.navigate(ROUTE_PREVIEW) },
                 onRecent = {
                     recentViewModel.refresh()
                     navController.navigate(ROUTE_RECENT)
                 },
+                onEvent = editorViewModel::onEvent,
+                state = editorState,
             )
         }
         composable(ROUTE_PREVIEW) {
+            val editorState by editorViewModel.state.collectAsStateWithLifecycle()
+
             PreviewScreen(
+                note = editorState.note,
                 onBack = { navController.popBackStack() },
                 onSaved = { location ->
-                    recentViewModel.save(editorState.note)
-                    savedMessage = "Saved to Downloads. Open it from your Files app under Downloads."
+                    recentViewModel.save(editorState.note, editorState.shipmentType)
+                    savedMessage = locationMessage(location)
                     navController.navigate(ROUTE_RECENT) { popUpTo(ROUTE_EDITOR) }
                     editorViewModel.onEvent(EditorEvent.Reset)
                 },
-                note = editorState.note,
             )
         }
         composable(ROUTE_RECENT) {
+            val recentState by recentViewModel.state.collectAsStateWithLifecycle()
+
             RecentScreen(
-                onBack = { navController.popBackStack() },
                 message = savedMessage,
+                onBack = { navController.popBackStack() },
                 onDelete = recentViewModel::delete,
                 onEdit = { saved ->
-                    editorViewModel.onEvent(EditorEvent.LoadNote(saved.note))
+                    editorViewModel.onEvent(EditorEvent.LoadNote(note = saved.note, shipmentType = saved.shipmentType))
                     navController.popBackStack(ROUTE_EDITOR, false)
                 },
                 onMessageShown = { savedMessage = null },
@@ -73,4 +76,10 @@ fun DebitterApp() {
             )
         }
     }
+}
+
+private fun locationMessage(location: SaveLocation): String = if (location.isShared) {
+    "Saved to Downloads. Open it from your Files app under Downloads."
+} else {
+    "Saved to the app's own Downloads folder. This version of Android blocks the shared one, so use Share to send it out."
 }

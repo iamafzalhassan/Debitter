@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +56,9 @@ fun AmountField(
     var field by remember { mutableStateOf(TextFieldValue(text = MoneyFormat.plain(value))) }
 
     LaunchedEffect(isAutoFocused) {
-        if (isAutoFocused) focusRequester.requestFocus()
+        if (!isAutoFocused) return@LaunchedEffect
+        withFrameNanos {}
+        focusRequester.requestFocus()
     }
 
     LaunchedEffect(isFocused) {
@@ -84,7 +87,7 @@ fun AmountField(
             onValueChange = { input ->
                 val cleaned = MoneyFormat.sanitize(input.text)
 
-                field = if (cleaned == input.text) input else TextFieldValue(text = cleaned, selection = TextRange(cleaned.length))
+                field = if (cleaned == input.text) input else TextFieldValue(selection = TextRange(cleaned.length), text = cleaned)
                 onValueChange(MoneyFormat.parse(cleaned))
             },
             singleLine = true,
@@ -124,6 +127,6 @@ private class ThousandsTransformation : VisualTransformation {
             override fun transformedToOriginal(offset: Int): Int = backward[offset.coerceIn(0, grouped.length)]
         }
 
-        return TransformedText(text = AnnotatedString(grouped.toString()), offsetMapping = mapping)
+        return TransformedText(offsetMapping = mapping, text = AnnotatedString(grouped.toString()))
     }
 }

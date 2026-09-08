@@ -1,8 +1,10 @@
 package com.example.debitter.model
 
+import androidx.compose.runtime.Immutable
 import java.io.Serializable
 import java.math.BigDecimal
 
+@Immutable
 data class DebitNote(
     val other: List<ChargeLine>,
     val statutory: List<ChargeLine>,
@@ -11,15 +13,15 @@ data class DebitNote(
     val header: NoteHeader,
     val labels: NoteLabels,
 ) : Serializable {
+    val hasCharges: Boolean get() = statutory.any { it.isPrintable } || other.any { it.isPrintable }
+
     val printableOther: List<ChargeLine> get() = other.filter { it.isPrintable }
 
     val printableStatutory: List<ChargeLine> get() = statutory.filter { it.isPrintable }
 
-    val hasCharges: Boolean get() = printableStatutory.isNotEmpty() || printableOther.isNotEmpty()
-
     val showsAdvance: Boolean get() = advanceReceived != null
 
-    val subTotal: BigDecimal get() = (printableStatutory + printableOther).fold(BigDecimal.ZERO) { sum, line -> sum + line.amount!! }
+    val subTotal: BigDecimal get() = sum(statutory) + sum(other)
 
     val total: BigDecimal get() = subTotal - (advanceReceived ?: BigDecimal.ZERO)
 
@@ -32,4 +34,6 @@ data class DebitNote(
         ChargeSection.OTHER -> copy(other = lines)
         ChargeSection.STATUTORY -> copy(statutory = lines)
     }
+
+    private fun sum(lines: List<ChargeLine>): BigDecimal = lines.fold(BigDecimal.ZERO) { running, line -> if (line.isPrintable) running + line.amount!! else running }
 }

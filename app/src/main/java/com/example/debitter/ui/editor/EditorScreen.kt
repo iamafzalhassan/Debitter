@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: () -> Unit, onRecent: () -> Unit, modifier: Modifier = Modifier) {
+fun EditorScreen(onPreview: () -> Unit, onRecent: () -> Unit, onEvent: (EditorEvent) -> Unit, state: EditorState, modifier: Modifier = Modifier) {
     val note = state.note
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
@@ -83,7 +83,7 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
             }
             item(key = "document-text") {
                 DocumentTextPanel(
-                    modifier = Modifier.padding(bottom = AppSpacing.xl, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                    modifier = Modifier.padding(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
                     company = note.company,
                     isExpanded = isDocumentTextExpanded,
                     labels = note.labels,
@@ -96,7 +96,7 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = AppSpacing.xl, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                        .padding(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
                 ) {
                     SectionHeader(label = "Shipment")
                     HeaderFields(
@@ -124,7 +124,7 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
             )
             item(key = "totals") {
                 TotalsBlock(
-                    modifier = Modifier.padding(bottom = AppSpacing.lg, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                    modifier = Modifier.padding(bottom = AppSpacing.lg, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
                     advance = note.advanceReceived,
                     advanceLabel = note.labels.advanceReceived,
                     hasCharges = note.hasCharges,

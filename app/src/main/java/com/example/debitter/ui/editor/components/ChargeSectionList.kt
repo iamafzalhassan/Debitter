@@ -32,10 +32,10 @@ fun LazyListScope.chargeSection(
     }
     items(items = lines, key = { it.id.toString() }) { line ->
         ChargeRow(
-            modifier = Modifier.padding(bottom = AppSpacing.chargeRowGap, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+            modifier = Modifier.padding(bottom = AppSpacing.chargeRowGap, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
+            line = line,
             onAmountChange = { onAmountChange(line, it) },
             onLabelChange = { onLabelChange(line, it) },
-            line = line,
         )
     }
     item(key = "action-$addLabel") {
@@ -43,7 +43,7 @@ fun LazyListScope.chargeSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = AppSpacing.screenPadding)
-                .padding(top = AppSpacing.sm, bottom = AppSpacing.xl),
+                .padding(bottom = AppSpacing.xl, top = AppSpacing.sm),
             label = addLabel,
             onClick = onAdd,
         )

@@ -1,7 +1,9 @@
 package com.example.debitter.model
 
+import androidx.compose.runtime.Immutable
 import java.io.Serializable
 
+@Immutable
 data class NoteLabels(
     val advanceReceived: String,
     val billTo: String,

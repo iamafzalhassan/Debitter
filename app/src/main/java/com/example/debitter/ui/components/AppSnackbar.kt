@@ -26,7 +26,7 @@ enum class SnackTone { ERROR, NEUTRAL, SUCCESS }
 
 @Composable
 fun AppSnackbarHost(state: AppSnackbarState, modifier: Modifier = Modifier) {
-    SnackbarHost(hostState = state.hostState, modifier = modifier) { data ->
+    SnackbarHost(modifier = modifier, hostState = state.hostState) { data ->
         Snackbar(
             containerColor = when (state.tone) {
                 SnackTone.ERROR -> AppColors.danger

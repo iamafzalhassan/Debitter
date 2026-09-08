@@ -13,7 +13,6 @@ import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 
 private const val DASH_GAP: Float = 4f
-
 private const val DASH_WIDTH: Float = 3f
 
 @Composable

@@ -12,7 +12,7 @@ import java.util.UUID
 sealed interface EditorEvent {
     data class AddCharge(val section: ChargeSection) : EditorEvent
 
-    data class LoadNote(val note: DebitNote) : EditorEvent
+    data class LoadNote(val note: DebitNote, val shipmentType: ShipmentType) : EditorEvent
 
     data object Reset : EditorEvent
 

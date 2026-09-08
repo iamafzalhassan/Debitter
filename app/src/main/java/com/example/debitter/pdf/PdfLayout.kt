@@ -30,7 +30,6 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         const val TITLE_SIZE: Float = 15f
         const val TOTALS_ROW_HEIGHT: Float = 18f
         const val TRACKING_LABEL: Float = 0.08f
-        const val TRACKING_TITLE: Float = 0.118f
 
         const val PAGE_HEIGHT: Int = 595
         const val PAGE_WIDTH: Int = 420
@@ -52,15 +51,18 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val rulePaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_THIN)
     val ruleStrongPaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_STRONG)
     val signaturePaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.CENTER, TRACKING_LABEL)
-    val titlePaint: Paint = textPaint(typefaces.displayBold, TITLE_SIZE, INK_COLOR, Paint.Align.RIGHT, TRACKING_TITLE)
+    val titlePaint: Paint = textPaint(typefaces.displayBold, TITLE_SIZE, INK_COLOR, Paint.Align.CENTER)
     val totalsValueBoldPaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
     val totalsValuePaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
+
+    private val lineHeights: Map<Paint, Float> by lazy { listOf(amountPaint, bodyPaint, companyDetailPaint, companyNamePaint, footerPaint, labelPaint, metaStrongPaint, signaturePaint, titlePaint, totalsValueBoldPaint, totalsValuePaint).associateWith { measureLineHeight(it) } }
 
     val amountLeft: Float get() = contentRight - AMOUNT_COLUMN_WIDTH
     val amountRight: Float get() = contentRight - CELL_PAD_X
     val cellLeft: Float get() = contentLeft + CELL_PAD_X
     val chargeLabelWidth: Float get() = amountLeft - cellLeft - CELL_PAD_X
     val contentBottom: Float get() = PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT
+    val contentCenterX: Float get() = (contentLeft + contentRight) / 2f
     val contentLeft: Float get() = MARGIN
     val contentRight: Float get() = PAGE_WIDTH - MARGIN
     val contentTop: Float get() = MARGIN
@@ -79,10 +81,7 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         return top + (height - count * (metrics.descent - metrics.ascent)) / 2f - metrics.ascent
     }
 
-    fun lineHeight(paint: Paint): Float {
-        val metrics = paint.fontMetrics
-        return metrics.descent - metrics.ascent
-    }
+    fun lineHeight(paint: Paint): Float = lineHeights[paint] ?: measureLineHeight(paint)
 
     fun snap(value: Float): Float = floor(value) + 0.5f
 
@@ -116,6 +115,11 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         }
         if (current.isNotEmpty()) lines += current
         return if (lines.isEmpty()) listOf("") else lines
+    }
+
+    private fun measureLineHeight(paint: Paint): Float {
+        val metrics = paint.fontMetrics
+        return metrics.descent - metrics.ascent
     }
 
     private fun breakLongWord(word: String, paint: Paint, maxWidth: Float): List<String> {

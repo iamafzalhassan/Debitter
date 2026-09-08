@@ -54,7 +54,7 @@ fun NoteActionsSheet(onDelete: () -> Unit, onDismiss: () -> Unit, onEdit: () -> 
                 Spacer(modifier = Modifier.height(AppSpacing.xs))
                 Text(
                     maxLines = 1,
-                    style = AppTextStyles.listSecondary,
+                    style = AppTextStyles.listMeta,
                     text = "${RecentDateFormat.format(saved.createdAt)}  ·  ${MoneyFormat.format(saved.total)}",
                 )
             }
@@ -69,7 +69,7 @@ fun NoteActionsSheet(onDelete: () -> Unit, onDismiss: () -> Unit, onEdit: () -> 
 }
 
 @Composable
-private fun SheetAction(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun SheetAction(label: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -77,7 +77,7 @@ private fun SheetAction(icon: ImageVector, label: String, onClick: () -> Unit, m
             .padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(contentDescription = null, imageVector = icon, modifier = Modifier.size(AppSpacing.iconSheet), tint = AppColors.primary)
+        Icon(modifier = Modifier.size(AppSpacing.iconSheet), contentDescription = null, imageVector = icon, tint = AppColors.primary)
         Spacer(modifier = Modifier.width(AppSpacing.lg))
         Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.body, text = label)
     }

@@ -1,6 +1,7 @@
 package com.example.debitter.ui.recent
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,6 +11,7 @@ import com.example.debitter.data.RecentNotesRepository
 import com.example.debitter.data.sources.NoteDatabase
 import com.example.debitter.model.DebitNote
 import com.example.debitter.model.SavedNote
+import com.example.debitter.model.ShipmentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 data class RecentState(val isLoading: Boolean, val notes: List<SavedNote>)
 
 class RecentViewModel(private val repository: RecentNotesRepository) : ViewModel() {
@@ -44,9 +47,9 @@ class RecentViewModel(private val repository: RecentNotesRepository) : ViewModel
         }
     }
 
-    fun save(note: DebitNote) {
+    fun save(note: DebitNote, shipmentType: ShipmentType) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { repository.save(note) }
+            withContext(Dispatchers.IO) { repository.save(note, shipmentType) }
             refresh()
         }
     }
