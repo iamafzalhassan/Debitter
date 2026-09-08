@@ -63,7 +63,7 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = AppSpacing.xl, top = AppSpacing.lg),
+            contentPadding = PaddingValues(bottom = AppSpacing.lg, top = AppSpacing.lg),
         ) {
             item(key = "shipment-type") {
                 ShipmentTypeSelector(

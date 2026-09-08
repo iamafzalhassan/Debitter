@@ -138,7 +138,7 @@ private fun PreviewActions(isEnabled: Boolean, onPrint: () -> Unit, onSave: () -
     Column(modifier = modifier.fillMaxWidth().background(AppColors.surfaceCard)) {
         HorizontalDivider(color = AppColors.divider, thickness = AppSpacing.hairline)
         Column(
-            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.xl),
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
         ) {
             PrimaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Save", onClick = onSave)
