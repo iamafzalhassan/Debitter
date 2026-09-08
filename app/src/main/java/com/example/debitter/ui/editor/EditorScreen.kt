@@ -2,15 +2,13 @@ package com.example.debitter.ui.editor
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,11 +30,11 @@ import com.example.debitter.ui.components.SecondaryButton
 import com.example.debitter.ui.components.SectionHeader
 import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.editor.components.AdvanceSheet
-import com.example.debitter.ui.editor.components.ChargeSectionList
 import com.example.debitter.ui.editor.components.DocumentTextPanel
 import com.example.debitter.ui.editor.components.HeaderFields
 import com.example.debitter.ui.editor.components.ShipmentTypeSelector
 import com.example.debitter.ui.editor.components.TotalsBlock
+import com.example.debitter.ui.editor.components.chargeSection
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
@@ -47,7 +45,6 @@ import kotlinx.coroutines.launch
 fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: () -> Unit, modifier: Modifier = Modifier) {
     val note = state.note
     val scope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
     val snackbarState = rememberAppSnackbarState()
 
     var isAdvanceSheetOpen by remember { mutableStateOf(false) }
@@ -64,31 +61,43 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(AppSpacing.xl),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(bottom = AppSpacing.xl, top = AppSpacing.lg),
         ) {
-            Spacer(modifier = Modifier.height(AppSpacing.xs))
-            ShipmentTypeSelector(onSelect = { onEvent(EditorEvent.SetShipmentType(it)) }, selected = state.shipmentType)
-            DocumentTextPanel(
-                modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
-                company = note.company,
-                isExpanded = isDocumentTextExpanded,
-                labels = note.labels,
-                onCompanyChange = { field, value -> onEvent(EditorEvent.SetCompanyField(value = value, field = field)) },
-                onLabelChange = { field, value -> onEvent(EditorEvent.SetLabel(value = value, field = field)) },
-                onToggle = { isDocumentTextExpanded = !isDocumentTextExpanded },
-            )
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.screenPadding)) {
-                SectionHeader(label = "Shipment")
-                HeaderFields(
-                    header = note.header,
-                    labels = note.labels,
-                    onFieldChange = { field, value -> onEvent(EditorEvent.SetHeaderField(value = value, field = field)) },
+            item(key = "shipment-type") {
+                ShipmentTypeSelector(
+                    modifier = Modifier.padding(bottom = AppSpacing.xl),
+                    onSelect = { onEvent(EditorEvent.SetShipmentType(it)) },
+                    selected = state.shipmentType,
                 )
             }
-            ChargeSectionList(
-                modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
+            item(key = "document-text") {
+                DocumentTextPanel(
+                    modifier = Modifier.padding(bottom = AppSpacing.xl, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                    company = note.company,
+                    isExpanded = isDocumentTextExpanded,
+                    labels = note.labels,
+                    onCompanyChange = { field, value -> onEvent(EditorEvent.SetCompanyField(value = value, field = field)) },
+                    onLabelChange = { field, value -> onEvent(EditorEvent.SetLabel(value = value, field = field)) },
+                    onToggle = { isDocumentTextExpanded = !isDocumentTextExpanded },
+                )
+            }
+            item(key = "shipment-details") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = AppSpacing.xl, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                ) {
+                    SectionHeader(label = "Shipment")
+                    HeaderFields(
+                        header = note.header,
+                        labels = note.labels,
+                        onFieldChange = { field, value -> onEvent(EditorEvent.SetHeaderField(value = value, field = field)) },
+                    )
+                }
+            }
+            chargeSection(
                 addLabel = "Add Statutory Charge",
                 heading = note.labels.statutorySection,
                 lines = note.statutory,
@@ -96,8 +105,7 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
                 onAmountChange = { line, amount -> onEvent(EditorEvent.SetChargeAmount(amount = amount, section = ChargeSection.STATUTORY, id = line.id)) },
                 onLabelChange = { line, label -> onEvent(EditorEvent.SetChargeLabel(label = label, section = ChargeSection.STATUTORY, id = line.id)) },
             )
-            ChargeSectionList(
-                modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
+            chargeSection(
                 addLabel = "Add Other Charge",
                 heading = note.labels.otherSection,
                 lines = note.other,
@@ -105,33 +113,36 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
                 onAmountChange = { line, amount -> onEvent(EditorEvent.SetChargeAmount(amount = amount, section = ChargeSection.OTHER, id = line.id)) },
                 onLabelChange = { line, label -> onEvent(EditorEvent.SetChargeLabel(label = label, section = ChargeSection.OTHER, id = line.id)) },
             )
-            TotalsBlock(
-                modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
-                advance = note.advanceReceived,
-                advanceLabel = note.labels.advanceReceived,
-                hasCharges = note.hasCharges,
-                onAdvanceTap = { isAdvanceSheetOpen = true },
-                showsAdvance = note.showsAdvance,
-                subTotal = note.subTotal,
-                subTotalLabel = note.labels.subTotal,
-                total = note.total,
-                totalLabel = note.labels.total,
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.screenPadding),
-                horizontalArrangement = Arrangement.spacedBy(AppSpacing.md),
-            ) {
-                SecondaryButton(
-                    modifier = Modifier.weight(1f),
-                    label = "Reset",
-                    onClick = {
-                        onEvent(EditorEvent.Reset)
-                        scope.launch { snackbarState.showBrief("The note is back to its defaults. Nothing you entered was kept.") }
-                    },
+            item(key = "totals") {
+                TotalsBlock(
+                    modifier = Modifier.padding(bottom = AppSpacing.lg, start = AppSpacing.screenPadding, end = AppSpacing.screenPadding),
+                    advance = note.advanceReceived,
+                    advanceLabel = note.labels.advanceReceived,
+                    hasCharges = note.hasCharges,
+                    onAdvanceTap = { isAdvanceSheetOpen = true },
+                    showsAdvance = note.showsAdvance,
+                    subTotal = note.subTotal,
+                    subTotalLabel = note.labels.subTotal,
+                    total = note.total,
+                    totalLabel = note.labels.total,
                 )
-                PrimaryButton(modifier = Modifier.weight(1f), isEnabled = note.hasCharges, label = "Preview", onClick = onPreview)
             }
-            Spacer(modifier = Modifier.height(AppSpacing.sm))
+            item(key = "actions") {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.screenPadding),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.md),
+                ) {
+                    SecondaryButton(
+                        modifier = Modifier.weight(1f),
+                        label = "Reset",
+                        onClick = {
+                            onEvent(EditorEvent.Reset)
+                            scope.launch { snackbarState.showBrief("The note is back to its defaults. Nothing you entered was kept.") }
+                        },
+                    )
+                    PrimaryButton(modifier = Modifier.weight(1f), isEnabled = note.hasCharges, label = "Preview", onClick = onPreview)
+                }
+            }
         }
     }
 

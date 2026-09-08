@@ -16,7 +16,7 @@ import com.example.debitter.util.DateFormat
 
 @Composable
 fun HeaderFields(onFieldChange: (HeaderField, String) -> Unit, header: NoteHeader, labels: NoteLabels, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AppSpacing.md)) {
         AppStaticField(label = labels.date, value = DateFormat.format(header.date))
         for (field in HeaderField.entries) {
             AppTextField(

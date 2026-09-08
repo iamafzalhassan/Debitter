@@ -47,7 +47,7 @@ fun TotalsBlock(
             .fillMaxWidth()
             .clip(RoundedCornerShape(AppSpacing.radiusCard))
             .background(AppColors.surfaceField)
-            .padding(horizontal = AppSpacing.lg, vertical = AppSpacing.sm),
+            .padding(horizontal = AppSpacing.lg, vertical = AppSpacing.md),
     ) {
         TotalsLine(isEditable = false, isStrong = false, label = subTotalLabel, value = MoneyFormat.format(subTotal))
         if (showsAdvance) {
@@ -73,7 +73,7 @@ fun TotalsBlock(
 @Composable
 private fun TotalsLine(isEditable: Boolean, isStrong: Boolean, label: String, value: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().height(AppSpacing.totalsRowHeight),
+        modifier = modifier.fillMaxWidth().padding(vertical = AppSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.overline, text = label)

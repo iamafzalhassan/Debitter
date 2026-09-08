@@ -15,27 +15,44 @@ import java.math.BigDecimal
 private const val SINGLE_PAGE: Int = 1
 
 class DebitNotePdfGenerator(private val layout: PdfLayout) {
-    fun render(note: DebitNote): ByteArray = compose(note, compose(note, SINGLE_PAGE).pages).bytes
-
-    private fun compose(note: DebitNote, pageCount: Int): Rendered {
+    fun render(note: DebitNote): ByteArray {
         val document = PdfDocument()
-        val sheet = Sheet(document, layout, pageCount)
 
+        try {
+            val sheet = Sheet(document, layout, countPages(note))
+
+            paint(sheet, note)
+            sheet.finish()
+
+            val stream = ByteArrayOutputStream()
+
+            document.writeTo(stream)
+            return stream.toByteArray()
+        } finally {
+            document.close()
+        }
+    }
+
+    private fun countPages(note: DebitNote): Int {
+        val document = PdfDocument()
+
+        try {
+            val sheet = Sheet(document, layout, SINGLE_PAGE)
+
+            paint(sheet, note)
+            sheet.finish()
+            return sheet.number
+        } finally {
+            document.close()
+        }
+    }
+
+    private fun paint(sheet: Sheet, note: DebitNote) {
         sheet.start()
         drawLetterhead(sheet, note)
         drawHeader(sheet, note.labels, note.header)
         drawTable(sheet, note)
         drawSignature(sheet, note.labels.signature)
-
-        val pages = sheet.number
-
-        sheet.finish()
-
-        val stream = ByteArrayOutputStream()
-
-        document.writeTo(stream)
-        document.close()
-        return Rendered(pages = pages, bytes = stream.toByteArray())
     }
 
     private fun drawLetterhead(sheet: Sheet, note: DebitNote) {
@@ -189,8 +206,6 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         sheet.y += paint.strokeWidth
     }
 }
-
-private class Rendered(val pages: Int, val bytes: ByteArray)
 
 private class Sheet(private val document: PdfDocument, private val layout: PdfLayout, private val pageCount: Int) {
     lateinit var canvas: Canvas

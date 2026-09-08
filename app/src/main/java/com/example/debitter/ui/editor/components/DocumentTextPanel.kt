@@ -60,7 +60,7 @@ fun DocumentTextPanel(
             .border(border = BorderStroke(AppSpacing.hairline, AppColors.divider), shape = shape),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(horizontal = AppSpacing.lg, vertical = AppSpacing.lg),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(horizontal = AppSpacing.lg, vertical = AppSpacing.md),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -78,7 +78,7 @@ fun DocumentTextPanel(
         AnimatedVisibility(visible = isExpanded) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(start = AppSpacing.lg, end = AppSpacing.lg, bottom = AppSpacing.lg),
-                verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
             ) {
                 Spacer(modifier = Modifier.height(AppSpacing.xs))
                 for (field in CompanyField.entries) {

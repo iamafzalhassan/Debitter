@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.sp
 import com.example.debitter.R
 
 object AppTextStyles {
-    val interFamily: FontFamily = FontFamily(
+    private val interFamily: FontFamily = FontFamily(
         Font(R.font.inter_regular, FontWeight.Normal),
         Font(R.font.inter_medium, FontWeight.Medium),
         Font(R.font.inter_semibold, FontWeight.SemiBold),
@@ -22,7 +22,6 @@ object AppTextStyles {
     val errorHint: TextStyle = style(size = 12, weight = FontWeight.Medium, height = 1.3f, color = AppColors.danger)
     val fieldLabel: TextStyle = style(size = 11, weight = FontWeight.Medium, height = 1.3f, color = AppColors.textSecondary)
     val fieldValue: TextStyle = style(size = 15, weight = FontWeight.SemiBold, height = 1.35f, color = AppColors.textPrimary)
-    val hint: TextStyle = style(size = 13, weight = FontWeight.Medium, height = 1.2f, color = AppColors.textTertiary, tracking = 0.4f)
     val label: TextStyle = style(size = 14, weight = FontWeight.Normal, height = 1.2f, color = AppColors.textSecondary)
     val listPrimary: TextStyle = style(size = 15, weight = FontWeight.SemiBold, height = 1.3f, color = AppColors.textPrimary)
     val listSecondary: TextStyle = style(size = 13, weight = FontWeight.Normal, height = 1.3f, color = AppColors.textSecondary)

@@ -24,7 +24,7 @@ fun SheetFrame(title: String, modifier: Modifier = Modifier, content: @Composabl
             .fillMaxWidth()
             .navigationBarsPadding()
             .padding(horizontal = AppSpacing.screenPadding)
-            .padding(bottom = AppSpacing.lg),
+            .padding(bottom = AppSpacing.lg, top = AppSpacing.lg),
     ) {
         Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.sectionHeading, text = title)
         Spacer(modifier = Modifier.height(AppSpacing.sm))

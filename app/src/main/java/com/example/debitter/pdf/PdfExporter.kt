@@ -28,6 +28,7 @@ import java.time.Instant
 
 class PdfExporter(private val context: Context) {
     companion object {
+        const val DOWNLOAD_SUBDIRECTORY: String = "Debitter/Debit Notes"
         const val MIME_TYPE: String = "application/pdf"
         const val PROVIDER_SUFFIX: String = ".fileprovider"
         const val SHARE_DIRECTORY: String = "shared"
@@ -73,7 +74,7 @@ class PdfExporter(private val context: Context) {
             put(MediaStore.Downloads.DISPLAY_NAME, name)
             put(MediaStore.Downloads.IS_PENDING, 1)
             put(MediaStore.Downloads.MIME_TYPE, MIME_TYPE)
-            put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+            put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$DOWNLOAD_SUBDIRECTORY")
         }
         val resolver = context.contentResolver
         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return saveToAppDownloads(bytes, name)
@@ -86,11 +87,11 @@ class PdfExporter(private val context: Context) {
         values.clear()
         values.put(MediaStore.Downloads.IS_PENDING, 0)
         resolver.update(uri, values, null, null)
-        return "${Environment.DIRECTORY_DOWNLOADS}/$name"
+        return "${Environment.DIRECTORY_DOWNLOADS}/$DOWNLOAD_SUBDIRECTORY/$name"
     }
 
     private fun saveToAppDownloads(bytes: ByteArray, name: String): String {
-        val directory = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: context.filesDir
+        val directory = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: context.filesDir, DOWNLOAD_SUBDIRECTORY)
         val file = File(directory, name)
 
         file.parentFile?.mkdirs()

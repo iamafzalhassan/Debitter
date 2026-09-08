@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -66,13 +68,14 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
     val document by produceState<PreviewDocument?>(initialValue = null, exporter, note) {
-        value = withContext(Dispatchers.Default) { renderDocument(exporter, note) }
+        value = withContext(Dispatchers.IO) { renderDocument(exporter, note) }
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             PreviewActions(
+                isEnabled = document != null,
                 onPrint = {
                     val bytes = document?.bytes ?: return@PreviewActions
                     exporter.print(bytes, exporter.fileName())
@@ -88,7 +91,6 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
                     val bytes = document?.bytes ?: return@PreviewActions
                     context.startActivity(Intent.createChooser(exporter.shareIntent(bytes, exporter.fileName()), "Share debit note"))
                 },
-                isEnabled = document != null,
             )
         },
         containerColor = AppColors.surfaceSunken,
@@ -117,7 +119,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(AppSpacing.md),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.xl),
         ) {
             itemsIndexed(items = pages) { index, page ->
                 Image(
@@ -133,17 +135,17 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
 
 @Composable
 private fun PreviewActions(isEnabled: Boolean, onPrint: () -> Unit, onSave: () -> Unit, onShare: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(AppColors.surfaceBase)
-            .padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
-    ) {
-        PrimaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Save", onClick = onSave)
-        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), modifier = Modifier.fillMaxWidth()) {
-            SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Share", onClick = onShare)
-            SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Print", onClick = onPrint)
+    Column(modifier = modifier.fillMaxWidth().background(AppColors.surfaceCard)) {
+        HorizontalDivider(color = AppColors.divider, thickness = AppSpacing.hairline)
+        Column(
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.xl),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
+        ) {
+            PrimaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Save", onClick = onSave)
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), modifier = Modifier.fillMaxWidth()) {
+                SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Share", onClick = onShare)
+                SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Print", onClick = onPrint)
+            }
         }
     }
 }
@@ -153,10 +155,9 @@ private class PreviewDocument(val bytes: ByteArray, val pages: List<ImageBitmap>
 private fun renderDocument(exporter: PdfExporter, note: DebitNote): PreviewDocument {
     val bytes = exporter.render(note)
     val file = exporter.cacheFile(bytes, PREVIEW_FILE)
-    val descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
 
-    descriptor.use {
-        PdfRenderer(it).use { renderer ->
+    ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+        PdfRenderer(descriptor).use { renderer ->
             val pages = (0 until renderer.pageCount).map { index -> renderPage(renderer, index) }
 
             return PreviewDocument(bytes = bytes, pages = pages)

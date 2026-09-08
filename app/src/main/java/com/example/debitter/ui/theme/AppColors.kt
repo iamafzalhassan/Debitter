@@ -18,5 +18,4 @@ object AppColors {
     val textPrimary: Color = Color(0xFF1A1A18)
     val textSecondary: Color = Color(0xFF6B6B63)
     val textTertiary: Color = Color(0xFF9B9B93)
-    val warning: Color = Color(0xFFB8860B)
 }
