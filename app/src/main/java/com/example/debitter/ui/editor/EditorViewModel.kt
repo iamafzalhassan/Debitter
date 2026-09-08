@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.Serializable
+import java.time.LocalDate
 
 data class EditorState(val note: DebitNote, val shipmentType: ShipmentType) : Serializable
 
@@ -28,6 +29,7 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
     fun onEvent(event: EditorEvent) {
         when (event) {
             is EditorEvent.AddCharge -> updateLines(event.section) { it + ChargeLine.custom() }
+            is EditorEvent.LoadNote -> update { it.copy(note = event.note.copy(header = event.note.header.copy(date = LocalDate.now()))) }
             is EditorEvent.Reset -> update { initial() }
             is EditorEvent.SetAdvance -> updateNote { it.copy(advanceReceived = event.amount) }
             is EditorEvent.SetChargeAmount -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(amount = event.amount) else it } }

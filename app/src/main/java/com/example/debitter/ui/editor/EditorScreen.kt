@@ -9,7 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -42,7 +46,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: () -> Unit, modifier: Modifier = Modifier) {
+fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: () -> Unit, onRecent: () -> Unit, modifier: Modifier = Modifier) {
     val note = state.note
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
@@ -56,6 +60,11 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
         snackbarHost = { AppSnackbarHost(state = snackbarState) },
         topBar = {
             TopAppBar(
+                actions = {
+                    IconButton(onClick = onRecent) {
+                        Icon(contentDescription = "Recent notes", imageVector = Icons.Outlined.ReceiptLong, tint = AppColors.textSecondary)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
                 title = { Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.screenTitle, text = "Debit Note") },
             )

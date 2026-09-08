@@ -2,6 +2,7 @@ package com.example.debitter.ui.editor
 
 import com.example.debitter.model.ChargeSection
 import com.example.debitter.model.CompanyField
+import com.example.debitter.model.DebitNote
 import com.example.debitter.model.HeaderField
 import com.example.debitter.model.LabelField
 import com.example.debitter.model.ShipmentType
@@ -10,6 +11,8 @@ import java.util.UUID
 
 sealed interface EditorEvent {
     data class AddCharge(val section: ChargeSection) : EditorEvent
+
+    data class LoadNote(val note: DebitNote) : EditorEvent
 
     data object Reset : EditorEvent
 

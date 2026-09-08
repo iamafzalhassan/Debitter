@@ -5,11 +5,16 @@ import androidx.compose.ui.unit.dp
 
 object AppSpacing {
     val amountField: Dp = 128.dp
+    val cardPadding: Dp = 12.dp
     val chargeRowGap: Dp = 8.dp
     val controlHeight: Dp = 52.dp
+    val emptyStateIcon: Dp = 80.dp
     val hairline: Dp = 1.dp
+    val iconEmptyState: Dp = 32.dp
+    val iconHint: Dp = 16.dp
     val iconInline: Dp = 14.dp
     val iconPlaceholder: Dp = 24.dp
+    val iconSheet: Dp = 22.dp
     val lg: Dp = 16.dp
     val md: Dp = 12.dp
     val previewPageMaxWidth: Dp = 480.dp

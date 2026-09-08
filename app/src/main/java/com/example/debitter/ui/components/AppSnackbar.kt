@@ -68,6 +68,6 @@ class AppSnackbarState(val hostState: SnackbarHostState) {
     private suspend fun show(message: String, tone: SnackTone) {
         this.tone = tone
         hostState.currentSnackbarData?.dismiss()
-        hostState.showSnackbar(duration = SnackbarDuration.Short, message = message)
+        hostState.showSnackbar(duration = SnackbarDuration.Long, message = message)
     }
 }

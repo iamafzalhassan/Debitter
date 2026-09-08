@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -82,7 +82,7 @@ private fun TotalsLine(isEditable: Boolean, isStrong: Boolean, label: String, va
             Icon(
                 modifier = Modifier.size(AppSpacing.iconInline),
                 contentDescription = null,
-                imageVector = Icons.Filled.Create,
+                imageVector = Icons.Outlined.Edit,
                 tint = AppColors.textSecondary,
             )
         }

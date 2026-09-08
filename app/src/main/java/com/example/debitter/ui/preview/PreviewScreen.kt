@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -62,7 +61,7 @@ private const val PREVIEW_SCALE: Int = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
+fun PreviewScreen(onBack: () -> Unit, onSaved: (String) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
@@ -76,20 +75,29 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
         bottomBar = {
             PreviewActions(
                 isEnabled = document != null,
-                onPrint = {
-                    val bytes = document?.bytes ?: return@PreviewActions
-                    exporter.print(bytes, exporter.fileName())
-                },
                 onSave = {
                     val bytes = document?.bytes ?: return@PreviewActions
                     scope.launch {
-                        val location = withContext(Dispatchers.IO) { exporter.saveToDownloads(bytes, exporter.fileName()) }
-                        snackbarState.showSuccess("Saved to $location")
+                        val location = runCatching { withContext(Dispatchers.IO) { exporter.saveToDownloads(bytes, exporter.fileName()) } }.getOrNull()
+
+                        if (location == null) {
+                            snackbarState.showError("The debit note could not be saved to Downloads. Check the phone storage and try again.")
+                            return@launch
+                        }
+                        onSaved(location)
                     }
                 },
                 onShare = {
                     val bytes = document?.bytes ?: return@PreviewActions
-                    context.startActivity(Intent.createChooser(exporter.shareIntent(bytes, exporter.fileName()), "Share debit note"))
+                    scope.launch {
+                        val intent = runCatching { withContext(Dispatchers.IO) { exporter.shareIntent(bytes, exporter.fileName()) } }.getOrNull()
+
+                        if (intent == null) {
+                            snackbarState.showError("The debit note could not be prepared for sharing. Check the phone storage and try again.")
+                            return@launch
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share debit note"))
+                    }
                 },
             )
         },
@@ -134,7 +142,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
 }
 
 @Composable
-private fun PreviewActions(isEnabled: Boolean, onPrint: () -> Unit, onSave: () -> Unit, onShare: () -> Unit, modifier: Modifier = Modifier) {
+private fun PreviewActions(isEnabled: Boolean, onSave: () -> Unit, onShare: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth().background(AppColors.surfaceCard)) {
         HorizontalDivider(color = AppColors.divider, thickness = AppSpacing.hairline)
         Column(
@@ -142,10 +150,7 @@ private fun PreviewActions(isEnabled: Boolean, onPrint: () -> Unit, onSave: () -
             verticalArrangement = Arrangement.spacedBy(AppSpacing.md),
         ) {
             PrimaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Save", onClick = onSave)
-            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), modifier = Modifier.fillMaxWidth()) {
-                SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Share", onClick = onShare)
-                SecondaryButton(modifier = Modifier.weight(1f), isEnabled = isEnabled, label = "Print", onClick = onPrint)
-            }
+            SecondaryButton(modifier = Modifier.fillMaxWidth(), isEnabled = isEnabled, label = "Share", onClick = onShare)
         }
     }
 }
