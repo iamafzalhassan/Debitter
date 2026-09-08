@@ -27,7 +27,6 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         const val RULE_THIN: Float = 0.75f
         const val SIGNATURE_SPACE: Float = 22f
         const val SIGNATURE_WIDTH: Float = 130f
-        const val TITLE_SIZE: Float = 15f
         const val TOTALS_ROW_HEIGHT: Float = 18f
         const val TRACKING_LABEL: Float = 0.08f
 
@@ -51,7 +50,7 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val rulePaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_THIN)
     val ruleStrongPaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_STRONG)
     val signaturePaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.CENTER, TRACKING_LABEL)
-    val titlePaint: Paint = textPaint(typefaces.displayBold, TITLE_SIZE, INK_COLOR, Paint.Align.CENTER)
+    val titlePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, INK_COLOR, Paint.Align.CENTER)
     val totalsValueBoldPaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
     val totalsValuePaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
 

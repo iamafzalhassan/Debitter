@@ -63,7 +63,6 @@ fun NoteActionsSheet(onDelete: () -> Unit, onDismiss: () -> Unit, onEdit: () -> 
             SheetAction(icon = Icons.Outlined.Folder, label = "Save a Copy", onClick = { hideThen(onSaveCopy) })
             SheetAction(icon = Icons.Outlined.Share, label = "Share", onClick = { hideThen(onShare) })
             SheetAction(icon = Icons.Outlined.Delete, label = "Delete", onClick = { hideThen(onDelete) })
-            Spacer(modifier = Modifier.height(AppSpacing.md))
         }
     }
 }
