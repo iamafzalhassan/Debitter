@@ -109,7 +109,7 @@ fun PreviewScreen(onBack: () -> Unit, note: DebitNote, modifier: Modifier = Modi
 
         if (pages == null) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(padding)) {
-                CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.progressLarge), strokeWidth = AppSpacing.progressStroke)
+                CircularProgressIndicator(color = AppColors.primary, modifier = Modifier.size(AppSpacing.progressIndicator), strokeWidth = AppSpacing.progressStroke)
             }
             return@Scaffold
         }

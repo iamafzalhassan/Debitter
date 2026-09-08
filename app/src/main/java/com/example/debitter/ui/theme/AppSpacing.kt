@@ -5,13 +5,12 @@ import androidx.compose.ui.unit.dp
 
 object AppSpacing {
     val amountColumn: Dp = 132.dp
-    val amountField: Dp = 104.dp
+    val amountField: Dp = 128.dp
     val appBarHeight: Dp = 64.dp
     val borderFocus: Dp = 1.4.dp
     val cardPadding: Dp = 12.dp
     val chargeRowGap: Dp = 8.dp
     val controlHeight: Dp = 52.dp
-    val dragHandle: Dp = 24.dp
     val emptyStateIcon: Dp = 80.dp
     val hairline: Dp = 1.dp
     val iconButton: Dp = 18.dp
@@ -27,7 +26,6 @@ object AppSpacing {
     val md: Dp = 12.dp
     val previewPageMaxWidth: Dp = 480.dp
     val progressIndicator: Dp = 20.dp
-    val progressLarge: Dp = 40.dp
     val progressStroke: Dp = 2.dp
     val radiusButton: Dp = 50.dp
     val radiusCard: Dp = 12.dp
@@ -41,5 +39,4 @@ object AppSpacing {
     val xxs: Dp = 2.dp
 
     val buttonHeight: Dp = controlHeight
-    val chargeRowStride: Dp = controlHeight + chargeRowGap
 }

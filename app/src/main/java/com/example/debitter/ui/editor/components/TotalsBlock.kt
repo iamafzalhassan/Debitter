@@ -2,6 +2,7 @@ package com.example.debitter.ui.editor.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,7 +53,7 @@ fun TotalsBlock(
         if (showsAdvance) {
             DottedDivider()
             TotalsLine(
-                modifier = Modifier.clickable(onClick = onAdvanceTap),
+                modifier = Modifier.clickable(indication = null, interactionSource = remember { MutableInteractionSource() }, onClick = onAdvanceTap),
                 isEditable = true,
                 isStrong = false,
                 label = advanceLabel,
@@ -74,7 +76,7 @@ private fun TotalsLine(isEditable: Boolean, isStrong: Boolean, label: String, va
         modifier = modifier.fillMaxWidth().height(AppSpacing.totalsRowHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.overline, text = label.uppercase())
+        Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.overline, text = label)
         if (isEditable) {
             Spacer(modifier = Modifier.size(AppSpacing.xs))
             Icon(

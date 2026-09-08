@@ -27,14 +27,12 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
 
     fun onEvent(event: EditorEvent) {
         when (event) {
-            is EditorEvent.AddCharge -> updateLines(event.section) { it + ChargeLine.empty() }
-            is EditorEvent.MoveCharge -> updateLines(event.section) { move(it, event.from, event.to) }
+            is EditorEvent.AddCharge -> updateLines(event.section) { it + ChargeLine.custom() }
             is EditorEvent.Reset -> update { initial() }
             is EditorEvent.SetAdvance -> updateNote { it.copy(advanceReceived = event.amount) }
             is EditorEvent.SetChargeAmount -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(amount = event.amount) else it } }
             is EditorEvent.SetChargeLabel -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(label = event.label) else it } }
             is EditorEvent.SetCompanyField -> updateNote { it.copy(company = it.company.with(event.field, event.value)) }
-            is EditorEvent.SetDate -> updateNote { it.copy(header = it.header.copy(date = event.date)) }
             is EditorEvent.SetHeaderField -> updateNote { it.copy(header = it.header.with(event.field, event.value)) }
             is EditorEvent.SetLabel -> updateNote { it.copy(labels = it.labels.with(event.field, event.value)) }
             is EditorEvent.SetShipmentType -> update { applyShipmentType(it, event.type) }
@@ -67,19 +65,10 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
         val incoming = ChargePresets.labels(section, to)
         val incomingSet = incoming.toSet()
         val byLabel = current.associateBy { it.label }
-        val rostered = incoming.map { byLabel[it] ?: ChargeLine.empty(it) }
+        val rostered = incoming.map { byLabel[it] ?: ChargeLine.preset(label = it, appendsSuffix = ChargePresets.appendsSuffix(it)) }
         val carried = current.filter { it.label !in incomingSet && (it.label !in outgoing || it.isPrintable) }
 
         return rostered + carried
-    }
-
-    private fun move(lines: List<ChargeLine>, from: Int, to: Int): List<ChargeLine> {
-        if (from == to || from !in lines.indices || to !in lines.indices) return lines
-
-        val reordered = lines.toMutableList()
-
-        reordered.add(to, reordered.removeAt(from))
-        return reordered
     }
 
     private fun initial(): EditorState = EditorState(note = Defaults.note(), shipmentType = Defaults.shipmentType)

@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.CompanyBlock
 import com.example.debitter.model.CompanyField
@@ -65,7 +64,7 @@ fun DocumentTextPanel(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listPrimary, text = "Document text")
+                Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listPrimary, text = "Document Text")
                 Spacer(modifier = Modifier.height(AppSpacing.xxs))
                 Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.listSecondary, text = "Company Block, Title, Every Printed Label")
             }
@@ -81,12 +80,12 @@ fun DocumentTextPanel(
                 modifier = Modifier.fillMaxWidth().padding(start = AppSpacing.lg, end = AppSpacing.lg, bottom = AppSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
             ) {
+                Spacer(modifier = Modifier.height(AppSpacing.xs))
                 for (field in CompanyField.entries) {
                     AppTextField(
                         label = field.caption,
                         value = company.value(field),
                         onValueChange = { onCompanyChange(field, it) },
-                        capitalization = KeyboardCapitalization.Characters,
                     )
                 }
                 Spacer(modifier = Modifier.height(AppSpacing.xs))
@@ -97,7 +96,6 @@ fun DocumentTextPanel(
                         label = field.caption,
                         value = labels.value(field),
                         onValueChange = { onLabelChange(field, it) },
-                        capitalization = KeyboardCapitalization.Words,
                     )
                 }
             }

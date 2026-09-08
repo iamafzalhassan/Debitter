@@ -22,10 +22,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
@@ -41,12 +46,20 @@ fun AmountField(
     isAutoFocused: Boolean = false,
     onSubmit: () -> Unit = {},
 ) {
+    val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val transformation = remember { ThousandsTransformation() }
 
-    var field by remember { mutableStateOf(TextFieldValue(text = value?.toPlainString().orEmpty())) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    var field by remember { mutableStateOf(TextFieldValue(text = MoneyFormat.plain(value))) }
 
     LaunchedEffect(isAutoFocused) {
         if (isAutoFocused) focusRequester.requestFocus()
+    }
+
+    LaunchedEffect(isFocused) {
+        if (isFocused) field = field.copy(selection = TextRange(0, field.text.length))
     }
 
     Box(
@@ -61,9 +74,12 @@ fun AmountField(
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester)
-                .onFocusChanged { state -> if (state.isFocused) field = field.copy(selection = TextRange(0, field.text.length)) },
+                .onFocusChanged { state -> isFocused = state.isFocused },
             cursorBrush = SolidColor(AppColors.primary),
-            keyboardActions = KeyboardActions(onDone = { onSubmit() }),
+            keyboardActions = KeyboardActions(onDone = {
+                onSubmit()
+                focusManager.clearFocus()
+            }),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Decimal),
             onValueChange = { input ->
                 val cleaned = MoneyFormat.sanitize(input.text)
@@ -74,6 +90,40 @@ fun AmountField(
             singleLine = true,
             textStyle = AppTextStyles.amount.copy(textAlign = TextAlign.End),
             value = field,
+            visualTransformation = transformation,
         )
+    }
+}
+
+private class ThousandsTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val raw = text.text
+        val dot = raw.indexOf('.')
+        val wholeLength = if (dot < 0) raw.length else dot
+        val grouped = StringBuilder()
+        val forward = IntArray(raw.length + 1)
+
+        for (index in raw.indices) {
+            forward[index] = grouped.length
+            grouped.append(raw[index])
+            if (index < wholeLength - 1 && (wholeLength - 1 - index) % MoneyFormat.GROUP_SIZE == 0) grouped.append(MoneyFormat.SEPARATOR)
+        }
+        forward[raw.length] = grouped.length
+
+        val backward = IntArray(grouped.length + 1)
+        var original = 0
+
+        for (offset in 0..grouped.length) {
+            while (original < raw.length && forward[original + 1] <= offset) original++
+            backward[offset] = original
+        }
+
+        val mapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int = forward[offset.coerceIn(0, raw.length)]
+
+            override fun transformedToOriginal(offset: Int): Int = backward[offset.coerceIn(0, grouped.length)]
+        }
+
+        return TransformedText(text = AnnotatedString(grouped.toString()), offsetMapping = mapping)
     }
 }

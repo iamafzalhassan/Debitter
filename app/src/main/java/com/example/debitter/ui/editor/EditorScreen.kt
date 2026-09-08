@@ -84,31 +84,26 @@ fun EditorScreen(state: EditorState, onEvent: (EditorEvent) -> Unit, onPreview: 
                 HeaderFields(
                     header = note.header,
                     labels = note.labels,
-                    onDateChange = { onEvent(EditorEvent.SetDate(it)) },
                     onFieldChange = { field, value -> onEvent(EditorEvent.SetHeaderField(value = value, field = field)) },
                 )
             }
             ChargeSectionList(
                 modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
-                addLabel = "Add Statutory Expense",
+                addLabel = "Add Statutory Charge",
                 heading = note.labels.statutorySection,
                 lines = note.statutory,
                 onAdd = { onEvent(EditorEvent.AddCharge(ChargeSection.STATUTORY)) },
                 onAmountChange = { line, amount -> onEvent(EditorEvent.SetChargeAmount(amount = amount, section = ChargeSection.STATUTORY, id = line.id)) },
                 onLabelChange = { line, label -> onEvent(EditorEvent.SetChargeLabel(label = label, section = ChargeSection.STATUTORY, id = line.id)) },
-                onMove = { from, to -> onEvent(EditorEvent.MoveCharge(from = from, to = to, section = ChargeSection.STATUTORY)) },
-                section = ChargeSection.STATUTORY,
             )
             ChargeSectionList(
                 modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
-                addLabel = "Add Other Expense",
+                addLabel = "Add Other Charge",
                 heading = note.labels.otherSection,
                 lines = note.other,
                 onAdd = { onEvent(EditorEvent.AddCharge(ChargeSection.OTHER)) },
                 onAmountChange = { line, amount -> onEvent(EditorEvent.SetChargeAmount(amount = amount, section = ChargeSection.OTHER, id = line.id)) },
                 onLabelChange = { line, label -> onEvent(EditorEvent.SetChargeLabel(label = label, section = ChargeSection.OTHER, id = line.id)) },
-                onMove = { from, to -> onEvent(EditorEvent.MoveCharge(from = from, to = to, section = ChargeSection.OTHER)) },
-                section = ChargeSection.OTHER,
             )
             TotalsBlock(
                 modifier = Modifier.padding(horizontal = AppSpacing.screenPadding),
