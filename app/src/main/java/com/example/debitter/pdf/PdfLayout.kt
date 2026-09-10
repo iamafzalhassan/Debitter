@@ -54,7 +54,21 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val totalsValueBoldPaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
     val totalsValuePaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
 
-    private val lineHeights: Map<Paint, Float> by lazy { listOf(amountPaint, bodyPaint, companyDetailPaint, companyNamePaint, footerPaint, labelPaint, metaStrongPaint, signaturePaint, titlePaint, totalsValueBoldPaint, totalsValuePaint).associateWith { measureLineHeight(it) } }
+    private val lineHeights: Map<Paint, Float> by lazy {
+        listOf(
+            amountPaint,
+            bodyPaint,
+            companyDetailPaint,
+            companyNamePaint,
+            footerPaint,
+            labelPaint,
+            metaStrongPaint,
+            signaturePaint,
+            titlePaint,
+            totalsValueBoldPaint,
+            totalsValuePaint,
+        ).associateWith { measureLineHeight(it) }
+    }
 
     val amountLeft: Float get() = contentRight - AMOUNT_COLUMN_WIDTH
     val amountRight: Float get() = contentRight - CELL_PAD_X
@@ -80,13 +94,11 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         return top + (height - count * (metrics.descent - metrics.ascent)) / 2f - metrics.ascent
     }
 
-    fun lineHeight(paint: Paint): Float = lineHeights[paint] ?: measureLineHeight(paint)
-
-    fun snap(value: Float): Float = floor(value) + 0.5f
-
     fun colonX(columnX: Float): Float = columnX + COLON_OFFSET
 
     fun headerValueLeft(columnX: Float): Float = columnX + COLON_OFFSET + GAP_SM
+
+    fun snap(value: Float): Float = floor(value) + 0.5f
 
     fun wrap(text: String, paint: Paint, maxWidth: Float): List<String> {
         if (text.isBlank()) return listOf("")
@@ -116,9 +128,26 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         return if (lines.isEmpty()) listOf("") else lines
     }
 
-    private fun measureLineHeight(paint: Paint): Float {
-        val metrics = paint.fontMetrics
-        return metrics.descent - metrics.ascent
+    fun lineHeight(paint: Paint): Float = lineHeights[paint] ?: measureLineHeight(paint)
+
+    private fun textPaint(typeface: Typeface, size: Float, color: Int, align: Paint.Align, tracking: Float = 0f): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        this.color = color
+        this.textAlign = align
+        this.textSize = size
+        this.typeface = typeface
+        fontFeatureSettings = "'tnum'"
+        letterSpacing = tracking
+    }
+
+    private fun fillPaint(color: Int): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        this.color = color
+        style = Paint.Style.FILL
+    }
+
+    private fun strokePaint(color: Int, width: Float): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        this.color = color
+        this.strokeWidth = width
+        style = Paint.Style.STROKE
     }
 
     private fun breakLongWord(word: String, paint: Paint, maxWidth: Float): List<String> {
@@ -132,23 +161,8 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         return chunks
     }
 
-    private fun textPaint(typeface: Typeface, size: Float, color: Int, align: Paint.Align, tracking: Float = 0f): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = color
-        this.textAlign = align
-        this.textSize = size
-        this.typeface = typeface
-        fontFeatureSettings = "'tnum'"
-        letterSpacing = tracking
-    }
-
-    private fun strokePaint(color: Int, width: Float): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = color
-        this.strokeWidth = width
-        style = Paint.Style.STROKE
-    }
-
-    private fun fillPaint(color: Int): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = color
-        style = Paint.Style.FILL
+    private fun measureLineHeight(paint: Paint): Float {
+        val metrics = paint.fontMetrics
+        return metrics.descent - metrics.ascent
     }
 }

@@ -6,6 +6,8 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
+data class NoteRow(val createdAt: Long, val billTo: String, val id: String, val payload: String, val total: String)
+
 class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationContext, DATABASE_NAME, null, SCHEMA_VERSION) {
     companion object {
         const val MAX_ROWS: Int = 500
@@ -18,6 +20,14 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         const val COLUMN_TOTAL: String = "total"
         const val DATABASE_NAME: String = "debitter.db"
         const val TABLE_RECENT: String = "recent_notes"
+    }
+
+    fun delete(id: String) {
+        writableDatabase.delete(TABLE_RECENT, "$COLUMN_ID = ?", arrayOf(id))
+    }
+
+    fun purgeOlderThan(cutoffMillis: Long) {
+        writableDatabase.delete(TABLE_RECENT, "$COLUMN_CREATED_AT < ?", arrayOf(cutoffMillis.toString()))
     }
 
     fun readAll(): List<NoteRow> {
@@ -42,20 +52,6 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         trim()
     }
 
-    fun delete(id: String) {
-        writableDatabase.delete(TABLE_RECENT, "$COLUMN_ID = ?", arrayOf(id))
-    }
-
-    fun purgeOlderThan(cutoffMillis: Long) {
-        writableDatabase.delete(TABLE_RECENT, "$COLUMN_CREATED_AT < ?", arrayOf(cutoffMillis.toString()))
-    }
-
-    private fun trim() {
-        writableDatabase.execSQL(
-            "DELETE FROM $TABLE_RECENT WHERE $COLUMN_ID NOT IN (SELECT $COLUMN_ID FROM $TABLE_RECENT ORDER BY $COLUMN_CREATED_AT DESC LIMIT $MAX_ROWS)",
-        )
-    }
-
     private fun Cursor.toRow(): NoteRow = NoteRow(
         createdAt = getLong(getColumnIndexOrThrow(COLUMN_CREATED_AT)),
         billTo = getString(getColumnIndexOrThrow(COLUMN_BILL_TO)),
@@ -63,6 +59,12 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         payload = getString(getColumnIndexOrThrow(COLUMN_PAYLOAD)),
         total = getString(getColumnIndexOrThrow(COLUMN_TOTAL)),
     )
+
+    private fun trim() {
+        writableDatabase.execSQL(
+            "DELETE FROM $TABLE_RECENT WHERE $COLUMN_ID NOT IN (SELECT $COLUMN_ID FROM $TABLE_RECENT ORDER BY $COLUMN_CREATED_AT DESC LIMIT $MAX_ROWS)",
+        )
+    }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -75,12 +77,10 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         )
     }
 
+    override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = onUpgrade(db, oldVersion, newVersion)
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_RECENT")
         onCreate(db)
     }
-
-    override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = onUpgrade(db, oldVersion, newVersion)
 }
-
-data class NoteRow(val createdAt: Long, val billTo: String, val id: String, val payload: String, val total: String)

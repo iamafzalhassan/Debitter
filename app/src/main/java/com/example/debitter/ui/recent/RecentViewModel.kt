@@ -47,16 +47,16 @@ class RecentViewModel(private val repository: RecentNotesRepository) : ViewModel
         }
     }
 
-    fun save(note: DebitNote, shipmentType: ShipmentType) {
+    fun delete(id: String) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { repository.save(note, shipmentType) }
+            withContext(Dispatchers.IO) { repository.delete(id) }
             refresh()
         }
     }
 
-    fun delete(id: String) {
+    fun save(note: DebitNote, shipmentType: ShipmentType) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { repository.delete(id) }
+            withContext(Dispatchers.IO) { repository.save(note, shipmentType) }
             refresh()
         }
     }

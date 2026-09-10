@@ -14,15 +14,12 @@ data class DebitNote(
     val labels: NoteLabels,
 ) : Serializable {
     val hasCharges: Boolean get() = statutory.any { it.isPrintable } || other.any { it.isPrintable }
-
-    val printableOther: List<ChargeLine> get() = other.filter { it.isPrintable }
-
-    val printableStatutory: List<ChargeLine> get() = statutory.filter { it.isPrintable }
-
     val showsAdvance: Boolean get() = advanceReceived != null
 
-    val subTotal: BigDecimal get() = sum(statutory) + sum(other)
+    val printableOther: List<ChargeLine> get() = other.filter { it.isPrintable }
+    val printableStatutory: List<ChargeLine> get() = statutory.filter { it.isPrintable }
 
+    val subTotal: BigDecimal get() = sum(statutory) + sum(other)
     val total: BigDecimal get() = subTotal - (advanceReceived ?: BigDecimal.ZERO)
 
     fun lines(section: ChargeSection): List<ChargeLine> = when (section) {

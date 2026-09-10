@@ -39,7 +39,7 @@ fun SheetActions(primary: @Composable RowScope.() -> Unit, secondary: @Composabl
     Column(modifier = modifier.fillMaxWidth()) {
         DottedDivider()
         Spacer(modifier = Modifier.height(AppSpacing.lg))
-        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md), modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.md)) {
             secondary()
             primary()
         }

@@ -37,12 +37,12 @@ fun DebitterApp() {
             val editorState by editorViewModel.state.collectAsStateWithLifecycle()
 
             EditorScreen(
+                onEvent = editorViewModel::onEvent,
                 onPreview = { navController.navigate(ROUTE_PREVIEW) },
                 onRecent = {
                     recentViewModel.refresh()
                     navController.navigate(ROUTE_RECENT)
                 },
-                onEvent = editorViewModel::onEvent,
                 state = editorState,
             )
         }

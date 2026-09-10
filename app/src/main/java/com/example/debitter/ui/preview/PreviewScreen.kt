@@ -56,9 +56,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val PREVIEW_FILE: String = "preview.pdf"
-
 private const val PREVIEW_SCALE: Int = 2
+
+private const val PREVIEW_FILE: String = "preview.pdf"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

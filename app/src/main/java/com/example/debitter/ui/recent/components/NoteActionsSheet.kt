@@ -68,7 +68,7 @@ fun NoteActionsSheet(onDelete: () -> Unit, onDismiss: () -> Unit, onEdit: () -> 
 }
 
 @Composable
-private fun SheetAction(label: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun SheetAction(label: String, onClick: () -> Unit, icon: ImageVector, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()

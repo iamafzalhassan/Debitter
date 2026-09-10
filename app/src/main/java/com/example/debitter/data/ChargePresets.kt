@@ -31,8 +31,6 @@ object ChargePresets {
         "SLSI",
     )
 
-    private val terminal: Set<String> = setOf("AGENCY FEE / SERVICE", "CUSTOMS DUTY", "CUSTOMS OT", "TRANSPORT DETENTION")
-
     private val otherAdditions: Map<ShipmentType, List<String>> = mapOf(
         ShipmentType.AIR_FREIGHT to emptyList(),
         ShipmentType.BLANK to emptyList(),
@@ -49,10 +47,12 @@ object ChargePresets {
         ShipmentType.PERSONAL to emptyList(),
     )
 
+    private val terminal: Set<String> = setOf("AGENCY FEE / SERVICE", "CUSTOMS DUTY", "CUSTOMS OT", "TRANSPORT DETENTION")
+
+    fun appendsSuffix(label: String): Boolean = label !in terminal
+
     fun labels(section: ChargeSection, type: ShipmentType): List<String> = when (section) {
         ChargeSection.OTHER -> commonOther + otherAdditions.getValue(type)
         ChargeSection.STATUTORY -> commonStatutory + statutoryAdditions.getValue(type)
     }
-
-    fun appendsSuffix(label: String): Boolean = label !in terminal
 }

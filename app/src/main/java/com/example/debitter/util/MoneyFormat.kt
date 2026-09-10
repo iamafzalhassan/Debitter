@@ -21,6 +21,13 @@ object MoneyFormat {
 
     fun format(amount: BigDecimal): String = decimalFormat().format(amount.setScale(SCALE, RoundingMode.HALF_UP))
 
+    fun parse(input: String): BigDecimal? {
+        val cleaned = input.filter { it.isDigit() || it == '.' }.trimEnd('.')
+
+        if (cleaned.isEmpty()) return null
+        return cleaned.toBigDecimalOrNull()
+    }
+
     fun plain(amount: BigDecimal?): String = amount?.setScale(SCALE, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
 
     fun sanitize(input: String): String {
@@ -33,13 +40,6 @@ object MoneyFormat {
         val fraction = cleaned.substring(dot + 1).filter { it != '.' }.take(SCALE)
 
         return "$whole.$fraction"
-    }
-
-    fun parse(input: String): BigDecimal? {
-        val cleaned = input.filter { it.isDigit() || it == '.' }.trimEnd('.')
-
-        if (cleaned.isEmpty()) return null
-        return cleaned.toBigDecimalOrNull()
     }
 
     private fun decimalFormat(): DecimalFormat = formatter.get()

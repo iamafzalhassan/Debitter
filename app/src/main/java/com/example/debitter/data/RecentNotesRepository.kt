@@ -14,6 +14,8 @@ class RecentNotesRepository(private val database: NoteDatabase) {
         const val RETENTION_DAYS: Long = 90
     }
 
+    fun delete(id: String) = database.delete(id)
+
     fun load(): List<SavedNote> {
         purge()
         return database.readAll().mapNotNull { row ->
@@ -39,8 +41,6 @@ class RecentNotesRepository(private val database: NoteDatabase) {
             total = note.total.toPlainString(),
         ),
     )
-
-    fun delete(id: String) = database.delete(id)
 
     private fun purge() = database.purgeOlderThan(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(RETENTION_DAYS))
 }

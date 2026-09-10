@@ -98,8 +98,8 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
                 }
                 state.notes.isEmpty() -> EmptyState()
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
                     modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                 ) {
                     items(items = state.notes, key = { it.id }) { saved ->

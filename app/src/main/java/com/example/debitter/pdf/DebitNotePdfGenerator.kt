@@ -19,7 +19,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         val document = PdfDocument()
 
         try {
-            val sheet = Sheet(document, layout, countPages(note))
+            val sheet = Sheet(countPages(note), document, layout)
 
             paint(sheet, note)
             sheet.finish()
@@ -37,7 +37,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         val document = PdfDocument()
 
         try {
-            val sheet = Sheet(document, layout, SINGLE_PAGE)
+            val sheet = Sheet(SINGLE_PAGE, document, layout)
 
             paint(sheet, note)
             sheet.finish()
@@ -217,7 +217,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
     }
 }
 
-private class Sheet(private val document: PdfDocument, private val layout: PdfLayout, private val pageCount: Int) {
+private class Sheet(private val pageCount: Int, private val document: PdfDocument, private val layout: PdfLayout) {
     lateinit var canvas: Canvas
 
     var y: Float = 0f
@@ -226,11 +226,11 @@ private class Sheet(private val document: PdfDocument, private val layout: PdfLa
 
     private var page: PdfDocument.Page? = null
 
-    fun start() = newPage()
-
     fun ensure(height: Float) {
         if (y + height > layout.contentBottom) newPage()
     }
+
+    fun start() = newPage()
 
     fun newPage() {
         finish()

@@ -30,18 +30,9 @@ class PdfExporter(private val context: Context) {
 
     private val generator: DebitNotePdfGenerator by lazy { DebitNotePdfGenerator(PdfLayout(typefaces())) }
 
-    fun render(note: DebitNote): ByteArray = generator.render(note)
-
     fun fileName(): String = "Debit-Note-${DateFormat.stamp(Instant.now())}.pdf"
 
-    fun cacheFile(bytes: ByteArray, name: String): File {
-        val directory = File(context.cacheDir, SHARE_DIRECTORY).apply { mkdirs() }
-        val file = File(directory, name)
-
-        pruneCache(directory, file)
-        file.writeBytes(bytes)
-        return file
-    }
+    fun render(note: DebitNote): ByteArray = generator.render(note)
 
     fun saveToDownloads(bytes: ByteArray, name: String): SaveLocation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) saveToMediaStore(bytes, name) else saveToAppDownloads(bytes, name)
 
@@ -56,11 +47,23 @@ class PdfExporter(private val context: Context) {
         }
     }
 
-    private fun pruneCache(directory: File, keep: File) {
-        val cutoff = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(CACHE_RETENTION_HOURS)
+    fun cacheFile(bytes: ByteArray, name: String): File {
+        val directory = File(context.cacheDir, SHARE_DIRECTORY).apply { mkdirs() }
+        val file = File(directory, name)
 
-        directory.listFiles()?.forEach { if (it != keep && it.lastModified() < cutoff) it.delete() }
+        pruneCache(directory, file)
+        file.writeBytes(bytes)
+        return file
     }
+
+    private fun typefaces(): PdfTypefaces = PdfTypefaces(
+        bold = font(R.font.inter_bold),
+        displayBold = font(R.font.inter_display_bold),
+        regular = font(R.font.inter_regular),
+        semiBold = font(R.font.inter_semibold),
+    )
+
+    private fun font(id: Int): Typeface = ResourcesCompat.getFont(context, id) ?: throw IllegalStateException("Unresolved font resource $id")
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun saveToMediaStore(bytes: ByteArray, name: String): SaveLocation {
@@ -95,13 +98,9 @@ class PdfExporter(private val context: Context) {
 
     private fun contentUri(file: File): Uri = FileProvider.getUriForFile(context, "${context.packageName}$PROVIDER_SUFFIX", file)
 
-    private fun typefaces(): PdfTypefaces = PdfTypefaces(
-        bold = font(R.font.inter_bold),
-        displayBold = font(R.font.inter_display_bold),
-        regular = font(R.font.inter_regular),
-        semiBold = font(R.font.inter_semibold),
-    )
+    private fun pruneCache(directory: File, keep: File) {
+        val cutoff = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(CACHE_RETENTION_HOURS)
 
-    private fun font(id: Int): Typeface = ResourcesCompat.getFont(context, id) ?: throw IllegalStateException("Unresolved font resource $id")
+        directory.listFiles()?.forEach { if (it != keep && it.lastModified() < cutoff) it.delete() }
+    }
 }
-

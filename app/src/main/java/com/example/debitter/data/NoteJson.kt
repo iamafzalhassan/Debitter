@@ -44,16 +44,6 @@ object NoteJson {
     private const val KEY_VESSEL_FLIGHT: String = "vesselFlight"
     private const val KEY_VOYAGE_NO_DATE: String = "voyageNoDate"
 
-    fun encode(note: DebitNote, shipmentType: ShipmentType): String = JSONObject()
-        .put(KEY_OTHER, encodeLines(note.other))
-        .put(KEY_STATUTORY, encodeLines(note.statutory))
-        .put(KEY_ADVANCE_RECEIVED, note.advanceReceived?.toPlainString())
-        .put(KEY_COMPANY, encodeCompany(note.company))
-        .put(KEY_HEADER, encodeHeader(note.header))
-        .put(KEY_LABELS, encodeLabels(note.labels))
-        .put(KEY_SHIPMENT_TYPE, shipmentType.name)
-        .toString()
-
     fun decode(payload: String): DecodedNote? = runCatching {
         val root = JSONObject(payload)
 
@@ -70,53 +60,15 @@ object NoteJson {
         )
     }.getOrNull()
 
-    private fun encodeLines(lines: List<ChargeLine>): JSONArray {
-        val array = JSONArray()
-
-        for (line in lines) {
-            array.put(
-                JSONObject()
-                    .put(KEY_APPENDS_SUFFIX, line.appendsSuffix)
-                    .put(KEY_LABEL, line.label)
-                    .put(KEY_AMOUNT, line.amount?.toPlainString())
-                    .put(KEY_ID, line.id.toString()),
-            )
-        }
-        return array
-    }
-
-    private fun encodeCompany(company: CompanyBlock): JSONObject = JSONObject()
-        .put(KEY_ADDRESS_LINE, company.addressLine)
-        .put(KEY_CONTACT_LINE, company.contactLine)
-        .put(KEY_NAME, company.name)
-
-    private fun encodeHeader(header: NoteHeader): JSONObject = JSONObject()
-        .put(KEY_BILL_TO, header.billTo)
-        .put(KEY_BL_AWB_NO, header.blAwbNo)
-        .put(KEY_CONSIGNMENT, header.consignment)
-        .put(KEY_CONTAINER_NO, header.containerNo)
-        .put(KEY_CUSTOMS_ENTRY, header.customsEntry)
-        .put(KEY_VESSEL_FLIGHT, header.vesselFlight)
-        .put(KEY_VOYAGE_NO_DATE, header.voyageNoDate)
-        .put(KEY_DATE, header.date?.toString())
-
-    private fun encodeLabels(labels: NoteLabels): JSONObject = JSONObject()
-        .put(KEY_ADVANCE_RECEIVED, labels.advanceReceived)
-        .put(KEY_BILL_TO, labels.billTo)
-        .put(KEY_BL_AWB_NO, labels.blAwbNo)
-        .put(KEY_CHARGE_SUFFIX, labels.chargeSuffix)
-        .put(KEY_CONSIGNMENT, labels.consignment)
-        .put(KEY_CONTAINER_NO, labels.containerNo)
-        .put(KEY_CUSTOMS_ENTRY, labels.customsEntry)
-        .put(KEY_DATE, labels.date)
-        .put(KEY_OTHER_SECTION, labels.otherSection)
-        .put(KEY_SIGNATURE, labels.signature)
-        .put(KEY_STATUTORY_SECTION, labels.statutorySection)
-        .put(KEY_SUB_TOTAL, labels.subTotal)
-        .put(KEY_TITLE, labels.title)
-        .put(KEY_TOTAL, labels.total)
-        .put(KEY_VESSEL_FLIGHT, labels.vesselFlight)
-        .put(KEY_VOYAGE_NO_DATE, labels.voyageNoDate)
+    fun encode(note: DebitNote, shipmentType: ShipmentType): String = JSONObject()
+        .put(KEY_OTHER, encodeLines(note.other))
+        .put(KEY_STATUTORY, encodeLines(note.statutory))
+        .put(KEY_ADVANCE_RECEIVED, note.advanceReceived?.toPlainString())
+        .put(KEY_COMPANY, encodeCompany(note.company))
+        .put(KEY_HEADER, encodeHeader(note.header))
+        .put(KEY_LABELS, encodeLabels(note.labels))
+        .put(KEY_SHIPMENT_TYPE, shipmentType.name)
+        .toString()
 
     private fun decodeLines(array: JSONArray?): List<ChargeLine> {
         if (array == null) return emptyList()
@@ -186,4 +138,52 @@ object NoteJson {
     }
 
     private fun decodeShipmentType(name: String): ShipmentType = ShipmentType.entries.firstOrNull { it.name == name } ?: Defaults.shipmentType
+
+    private fun encodeLines(lines: List<ChargeLine>): JSONArray {
+        val array = JSONArray()
+
+        for (line in lines) {
+            array.put(
+                JSONObject()
+                    .put(KEY_APPENDS_SUFFIX, line.appendsSuffix)
+                    .put(KEY_LABEL, line.label)
+                    .put(KEY_AMOUNT, line.amount?.toPlainString())
+                    .put(KEY_ID, line.id.toString()),
+            )
+        }
+        return array
+    }
+
+    private fun encodeCompany(company: CompanyBlock): JSONObject = JSONObject()
+        .put(KEY_ADDRESS_LINE, company.addressLine)
+        .put(KEY_CONTACT_LINE, company.contactLine)
+        .put(KEY_NAME, company.name)
+
+    private fun encodeHeader(header: NoteHeader): JSONObject = JSONObject()
+        .put(KEY_BILL_TO, header.billTo)
+        .put(KEY_BL_AWB_NO, header.blAwbNo)
+        .put(KEY_CONSIGNMENT, header.consignment)
+        .put(KEY_CONTAINER_NO, header.containerNo)
+        .put(KEY_CUSTOMS_ENTRY, header.customsEntry)
+        .put(KEY_VESSEL_FLIGHT, header.vesselFlight)
+        .put(KEY_VOYAGE_NO_DATE, header.voyageNoDate)
+        .put(KEY_DATE, header.date?.toString())
+
+    private fun encodeLabels(labels: NoteLabels): JSONObject = JSONObject()
+        .put(KEY_ADVANCE_RECEIVED, labels.advanceReceived)
+        .put(KEY_BILL_TO, labels.billTo)
+        .put(KEY_BL_AWB_NO, labels.blAwbNo)
+        .put(KEY_CHARGE_SUFFIX, labels.chargeSuffix)
+        .put(KEY_CONSIGNMENT, labels.consignment)
+        .put(KEY_CONTAINER_NO, labels.containerNo)
+        .put(KEY_CUSTOMS_ENTRY, labels.customsEntry)
+        .put(KEY_DATE, labels.date)
+        .put(KEY_OTHER_SECTION, labels.otherSection)
+        .put(KEY_SIGNATURE, labels.signature)
+        .put(KEY_STATUTORY_SECTION, labels.statutorySection)
+        .put(KEY_SUB_TOTAL, labels.subTotal)
+        .put(KEY_TITLE, labels.title)
+        .put(KEY_TOTAL, labels.total)
+        .put(KEY_VESSEL_FLIGHT, labels.vesselFlight)
+        .put(KEY_VOYAGE_NO_DATE, labels.voyageNoDate)
 }

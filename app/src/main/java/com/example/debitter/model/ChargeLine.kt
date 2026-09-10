@@ -9,9 +9,9 @@ import java.util.UUID
 @Immutable
 data class ChargeLine(val appendsSuffix: Boolean, val label: String, val amount: BigDecimal?, val id: UUID) : Serializable {
     companion object {
-        fun preset(label: String, appendsSuffix: Boolean): ChargeLine = ChargeLine(appendsSuffix = appendsSuffix, label = label, amount = MoneyFormat.zero, id = UUID.randomUUID())
-
         fun custom(): ChargeLine = ChargeLine(appendsSuffix = false, label = "", amount = MoneyFormat.zero, id = UUID.randomUUID())
+
+        fun preset(label: String, appendsSuffix: Boolean): ChargeLine = ChargeLine(appendsSuffix = appendsSuffix, label = label, amount = MoneyFormat.zero, id = UUID.randomUUID())
     }
 
     val isPrintable: Boolean get() = amount != null && amount.signum() != 0 && label.isNotBlank()

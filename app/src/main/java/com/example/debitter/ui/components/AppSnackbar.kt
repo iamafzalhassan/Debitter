@@ -61,9 +61,9 @@ class AppSnackbarState(val hostState: SnackbarHostState) {
 
     suspend fun showBrief(message: String) = show(message, SnackTone.NEUTRAL)
 
-    suspend fun showSuccess(message: String) = show(message, SnackTone.SUCCESS)
-
     suspend fun showError(message: String) = show(message, SnackTone.ERROR)
+
+    suspend fun showSuccess(message: String) = show(message, SnackTone.SUCCESS)
 
     private suspend fun show(message: String, tone: SnackTone) {
         this.tone = tone
