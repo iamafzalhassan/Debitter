@@ -61,7 +61,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
 
     private fun drawLetterhead(sheet: LetterSheet, letterhead: Letterhead) {
         drawWrapped(sheet, letterhead.name, layout.letterheadNamePaint, layout.contentCenterX)
-        sheet.y += LetterLayout.GAP_XS
+        if (letterhead.name.isNotBlank()) sheet.y += LetterLayout.GAP_XS
         drawWrapped(sheet, letterhead.tagline, layout.taglinePaint, layout.contentCenterX)
         drawWrapped(sheet, letterhead.addressLine, layout.letterheadDetailPaint, layout.contentCenterX)
         drawWrapped(sheet, letterhead.contactLine, layout.letterheadDetailPaint, layout.contentCenterX)

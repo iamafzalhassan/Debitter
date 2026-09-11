@@ -37,13 +37,14 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         val HAIRLINE_COLOR: Int = 0xFFBFBFBF.toInt()
         val INK_COLOR: Int = 0xFF111111.toInt()
         val INK_MUTED_COLOR: Int = 0xFF666666.toInt()
+        val LETTERHEAD_COLOR: Int = 0xFF002060.toInt()
     }
 
     val amountPaint: Paint = textPaint(typefaces.semiBold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
     val bandPaint: Paint = fillPaint(BAND_COLOR)
     val bodyPaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.LEFT)
     val companyDetailPaint: Paint = textPaint(typefaces.regular, META_SIZE, INK_COLOR, Paint.Align.LEFT)
-    val companyNamePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, INK_COLOR, Paint.Align.LEFT)
+    val companyNamePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, LETTERHEAD_COLOR, Paint.Align.LEFT)
     val footerPaint: Paint = textPaint(typefaces.regular, FOOTER_SIZE, INK_MUTED_COLOR, Paint.Align.RIGHT)
     val labelPaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.LEFT, TRACKING_LABEL)
     val metaStrongPaint: Paint = textPaint(typefaces.semiBold, META_SIZE, INK_COLOR, Paint.Align.LEFT)

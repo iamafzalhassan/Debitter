@@ -54,7 +54,7 @@ fun HomeScreen(onOpen: (DocumentKind) -> Unit, modifier: Modifier = Modifier) {
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = AppSpacing.lg, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
+            contentPadding = PaddingValues(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
         ) {
             items(items = DocumentKind.entries, key = { it.name }) { kind ->

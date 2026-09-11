@@ -33,6 +33,7 @@ import com.example.debitter.model.Letterhead
 import com.example.debitter.model.RefundLetter
 import com.example.debitter.model.ShippingAgent
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.PresetSheet
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
 import com.example.debitter.ui.components.SectionHeader
@@ -40,7 +41,6 @@ import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.letter.components.AgentFields
 import com.example.debitter.ui.letter.components.LetterTextPanel
 import com.example.debitter.ui.letter.components.LetterheadFields
-import com.example.debitter.ui.letter.components.PresetSheet
 import com.example.debitter.ui.letter.components.ReferenceFields
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
@@ -89,7 +89,7 @@ fun LetterScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = AppSpacing.lg, top = AppSpacing.lg),
+            contentPadding = PaddingValues(bottom = AppSpacing.xl, top = AppSpacing.lg),
         ) {
             item(key = "document-text") {
                 LetterTextPanel(
@@ -132,7 +132,7 @@ fun LetterScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
+                        .padding(bottom = AppSpacing.lg, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),
                 ) {
                     SectionHeader(label = "Shipment")
                     ReferenceFields(

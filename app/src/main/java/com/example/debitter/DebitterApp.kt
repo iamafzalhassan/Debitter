@@ -74,6 +74,7 @@ fun DebitterApp() {
             val note by editorViewModel.state.collectAsStateWithLifecycle()
 
             EditorScreen(
+                customers = editorViewModel.customers,
                 note = note,
                 onBack = { navController.popBackStack() },
                 onEvent = editorViewModel::onEvent,

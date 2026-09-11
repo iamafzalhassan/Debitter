@@ -31,7 +31,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.ChargeSection
 import com.example.debitter.model.DebitNote
 import com.example.debitter.model.DocumentKind
+import com.example.debitter.model.HeaderField
+import com.example.debitter.model.Letterhead
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.PresetSheet
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
 import com.example.debitter.ui.components.SectionHeader
@@ -48,11 +51,20 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(onBack: () -> Unit, onPreview: () -> Unit, onRecent: () -> Unit, onEvent: (EditorEvent) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
+fun EditorScreen(
+    customers: List<Letterhead>,
+    onBack: () -> Unit,
+    onPreview: () -> Unit,
+    onRecent: () -> Unit,
+    onEvent: (EditorEvent) -> Unit,
+    note: DebitNote,
+    modifier: Modifier = Modifier,
+) {
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
 
     var isAdvanceSheetOpen by remember { mutableStateOf(false) }
+    var isCustomerSheetOpen by remember { mutableStateOf(false) }
     var isDocumentTextExpanded by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
@@ -78,7 +90,7 @@ fun EditorScreen(onBack: () -> Unit, onPreview: () -> Unit, onRecent: () -> Unit
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = AppSpacing.lg, top = AppSpacing.lg),
+            contentPadding = PaddingValues(bottom = AppSpacing.xl, top = AppSpacing.lg),
         ) {
             item(key = "document-text") {
                 DocumentTextPanel(
@@ -102,6 +114,7 @@ fun EditorScreen(onBack: () -> Unit, onPreview: () -> Unit, onRecent: () -> Unit
                         header = note.header,
                         labels = note.labels,
                         onFieldChange = { field, value -> onEvent(EditorEvent.SetHeaderField(value = value, field = field)) },
+                        onPickBillTo = { isCustomerSheetOpen = true },
                     )
                 }
             }
@@ -167,6 +180,20 @@ fun EditorScreen(onBack: () -> Unit, onPreview: () -> Unit, onRecent: () -> Unit
                 isAdvanceSheetOpen = false
             },
             subTotal = note.subTotal,
+        )
+    }
+
+    if (isCustomerSheetOpen) {
+        PresetSheet(
+            detail = { it.addressLine },
+            items = customers,
+            name = { it.name },
+            onDismiss = { isCustomerSheetOpen = false },
+            onPick = {
+                isCustomerSheetOpen = false
+                onEvent(EditorEvent.SetHeaderField(value = it.name, field = HeaderField.BILL_TO))
+            },
+            title = "Choose Customer",
         )
     }
 }

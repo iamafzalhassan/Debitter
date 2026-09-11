@@ -4,9 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.debitter.data.ChargePresets
 import com.example.debitter.data.Defaults
+import com.example.debitter.data.LetterPresets
 import com.example.debitter.model.ChargeLine
 import com.example.debitter.model.ChargeSection
 import com.example.debitter.model.DebitNote
+import com.example.debitter.model.Letterhead
 import com.example.debitter.model.with
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,8 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
     companion object {
         const val STATE_KEY: String = "editor-note"
     }
+
+    val customers: List<Letterhead> = LetterPresets.letterheads.filter { it.name != Defaults.company.name }
 
     private val mutableState: MutableStateFlow<DebitNote> = MutableStateFlow(savedState.get<DebitNote>(STATE_KEY) ?: Defaults.note())
 
