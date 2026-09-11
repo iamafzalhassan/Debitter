@@ -23,8 +23,6 @@ data class RecentState(val isLoading: Boolean, val notes: List<SavedNote>)
 
 class RecentViewModel(private val repository: RecentNotesRepository) : ViewModel() {
     companion object {
-        const val RETENTION_DAYS: Long = RecentNotesRepository.RETENTION_DAYS
-
         fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
             initializer { RecentViewModel(RecentNotesRepository(NoteDatabase(context.applicationContext))) }
         }

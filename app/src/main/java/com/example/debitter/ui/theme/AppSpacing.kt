@@ -11,7 +11,6 @@ object AppSpacing {
     val emptyStateIcon: Dp = 80.dp
     val hairline: Dp = 1.dp
     val iconEmptyState: Dp = 32.dp
-    val iconHint: Dp = 16.dp
     val iconInline: Dp = 14.dp
     val iconPlaceholder: Dp = 24.dp
     val iconSheet: Dp = 22.dp

@@ -10,7 +10,6 @@ data class NoteRow(val createdAt: Long, val billTo: String, val id: String, val 
 
 class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationContext, DATABASE_NAME, null, SCHEMA_VERSION) {
     companion object {
-        const val MAX_ROWS: Int = 500
         const val SCHEMA_VERSION: Int = 1
 
         const val COLUMN_BILL_TO: String = "bill_to"
@@ -26,14 +25,10 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         writableDatabase.delete(TABLE_RECENT, "$COLUMN_ID = ?", arrayOf(id))
     }
 
-    fun purgeOlderThan(cutoffMillis: Long) {
-        writableDatabase.delete(TABLE_RECENT, "$COLUMN_CREATED_AT < ?", arrayOf(cutoffMillis.toString()))
-    }
-
     fun readAll(): List<NoteRow> {
         val rows = mutableListOf<NoteRow>()
 
-        readableDatabase.query(TABLE_RECENT, null, null, null, null, null, "$COLUMN_CREATED_AT DESC", MAX_ROWS.toString()).use { cursor ->
+        readableDatabase.query(TABLE_RECENT, null, null, null, null, null, "$COLUMN_CREATED_AT DESC").use { cursor ->
             while (cursor.moveToNext()) rows += cursor.toRow()
         }
         return rows
@@ -49,7 +44,6 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         }
 
         writableDatabase.insertWithOnConflict(TABLE_RECENT, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-        trim()
     }
 
     private fun Cursor.toRow(): NoteRow = NoteRow(
@@ -59,12 +53,6 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         payload = getString(getColumnIndexOrThrow(COLUMN_PAYLOAD)),
         total = getString(getColumnIndexOrThrow(COLUMN_TOTAL)),
     )
-
-    private fun trim() {
-        writableDatabase.execSQL(
-            "DELETE FROM $TABLE_RECENT WHERE $COLUMN_ID NOT IN (SELECT $COLUMN_ID FROM $TABLE_RECENT ORDER BY $COLUMN_CREATED_AT DESC LIMIT $MAX_ROWS)",
-        )
-    }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(

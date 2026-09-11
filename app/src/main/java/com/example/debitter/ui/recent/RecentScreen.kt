@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,10 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ReceiptLong
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -55,8 +51,6 @@ import com.example.debitter.ui.theme.AppTextStyles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-private const val NOTE_LINES: Int = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +85,6 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
         },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            RetentionNote()
             when {
                 state.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(modifier = Modifier.size(AppSpacing.progressIndicator), color = AppColors.primary, strokeWidth = AppSpacing.progressStroke)
@@ -99,7 +92,7 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
                 state.notes.isEmpty() -> EmptyState()
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
+                    contentPadding = PaddingValues(bottom = AppSpacing.lg, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                 ) {
                     items(items = state.notes, key = { it.id }) { saved ->
@@ -154,31 +147,6 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
 }
 
 @Composable
-private fun RetentionNote(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth().background(AppColors.surfaceSunken)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.screenPadding, vertical = AppSpacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                modifier = Modifier.size(AppSpacing.iconHint),
-                contentDescription = null,
-                imageVector = Icons.Outlined.Schedule,
-                tint = AppColors.textSecondary,
-            )
-            Spacer(modifier = Modifier.size(AppSpacing.sm))
-            Text(
-                maxLines = NOTE_LINES,
-                overflow = TextOverflow.Ellipsis,
-                style = AppTextStyles.listSecondary,
-                text = "Notes are kept for ${RecentViewModel.RETENTION_DAYS} days, then removed from this list.",
-            )
-        }
-        HorizontalDivider(color = AppColors.divider, thickness = AppSpacing.hairline)
-    }
-}
-
-@Composable
 private fun EmptyState(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize().padding(AppSpacing.screenPadding),
@@ -201,7 +169,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(AppSpacing.sm))
         Text(
             style = AppTextStyles.listSecondary,
-            text = "Every note you save appears here for ${RecentViewModel.RETENTION_DAYS} days, ready to edit or save again.",
+            text = "Every note you save stays here until you delete it, ready to edit or save again.",
             textAlign = TextAlign.Center,
         )
     }

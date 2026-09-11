@@ -112,12 +112,15 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
 
         if (leftLines.isEmpty() && rightLines.isEmpty()) return
 
+        val lineCount = maxOf(leftLines.size, rightLines.size)
         val lineHeight = layout.lineHeight(layout.metaStrongPaint)
-        val height = maxOf(PdfLayout.HEADER_ROW_HEIGHT, maxOf(leftLines.size, rightLines.size) * lineHeight)
+        val height = maxOf(PdfLayout.HEADER_ROW_HEIGHT, lineCount * lineHeight)
 
         sheet.ensure(height)
-        drawHeaderCell(sheet, left, leftLines, layout.contentLeft, height)
-        drawHeaderCell(sheet, right, rightLines, layout.headerRightX, height)
+        val firstBaseline = layout.blockBaseline(sheet.y, height, lineCount, layout.metaStrongPaint)
+
+        drawHeaderCell(sheet, left, leftLines, layout.contentLeft, firstBaseline)
+        drawHeaderCell(sheet, right, rightLines, layout.headerRightX, firstBaseline)
         sheet.y += height
     }
 
@@ -126,11 +129,10 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         return layout.wrap(cell.second, layout.metaStrongPaint, layout.headerValueWidth)
     }
 
-    private fun drawHeaderCell(sheet: Sheet, cell: Pair<String, String>, lines: List<String>, columnX: Float, height: Float) {
+    private fun drawHeaderCell(sheet: Sheet, cell: Pair<String, String>, lines: List<String>, columnX: Float, firstBaseline: Float) {
         if (lines.isEmpty()) return
 
         val lineHeight = layout.lineHeight(layout.metaStrongPaint)
-        val firstBaseline = layout.blockBaseline(sheet.y, height, lines.size, layout.metaStrongPaint)
 
         sheet.canvas.drawText(cell.first, columnX, firstBaseline, layout.labelPaint)
         sheet.canvas.drawText(":", layout.colonX(columnX), firstBaseline, layout.labelPaint)
