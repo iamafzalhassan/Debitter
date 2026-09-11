@@ -37,6 +37,7 @@ fun AppTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Characters,
     keyboardType: KeyboardType = KeyboardType.Text,
     textAlign: TextAlign = TextAlign.Start,
 ) {
@@ -48,11 +49,11 @@ fun AppTextField(
             cursorBrush = SolidColor(AppColors.primary),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Characters,
+                capitalization = capitalization,
                 imeAction = if (singleLine) ImeAction.Done else ImeAction.Default,
                 keyboardType = keyboardType,
             ),
-            onValueChange = { onValueChange(it.uppercase(Locale.ROOT)) },
+            onValueChange = { onValueChange(if (capitalization == KeyboardCapitalization.Characters) it.uppercase(Locale.ROOT) else it) },
             singleLine = singleLine,
             textStyle = AppTextStyles.fieldValue.copy(textAlign = textAlign),
             value = value,

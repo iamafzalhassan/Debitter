@@ -15,15 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import com.example.debitter.model.SavedDocument
+import com.example.debitter.model.SavedLetter
 import com.example.debitter.model.SavedNote
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
-import com.example.debitter.util.MoneyFormat
 import com.example.debitter.util.RecentDateFormat
 
 @Composable
-fun RecentNoteTile(onClick: () -> Unit, saved: SavedNote, modifier: Modifier = Modifier) {
+fun RecentTile(onClick: () -> Unit, saved: SavedDocument, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(AppSpacing.radiusCard)
 
     Column(
@@ -39,7 +40,7 @@ fun RecentNoteTile(onClick: () -> Unit, saved: SavedNote, modifier: Modifier = M
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = AppTextStyles.listPrimary,
-            text = saved.billTo.ifBlank { saved.note.labels.title },
+            text = saved.heading,
         )
         Spacer(modifier = Modifier.height(AppSpacing.xs))
         Text(
@@ -49,6 +50,14 @@ fun RecentNoteTile(onClick: () -> Unit, saved: SavedNote, modifier: Modifier = M
             text = RecentDateFormat.format(saved.createdAt),
         )
         Spacer(modifier = Modifier.height(AppSpacing.sm))
-        Text(maxLines = 1, style = AppTextStyles.totalsValueBold, text = MoneyFormat.format(saved.total))
+        Text(
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = when (saved) {
+                is SavedLetter -> AppTextStyles.listSecondary
+                is SavedNote -> AppTextStyles.totalsValueBold
+            },
+            text = saved.summary,
+        )
     }
 }

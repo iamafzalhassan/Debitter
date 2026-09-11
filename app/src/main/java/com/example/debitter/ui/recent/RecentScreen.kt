@@ -38,13 +38,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.debitter.model.SavedNote
+import com.example.debitter.model.DocumentKind
+import com.example.debitter.model.SavedDocument
 import com.example.debitter.pdf.PdfExporter
 import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
 import com.example.debitter.ui.components.rememberAppSnackbarState
-import com.example.debitter.ui.recent.components.NoteActionsSheet
-import com.example.debitter.ui.recent.components.RecentNoteTile
+import com.example.debitter.ui.recent.components.RecentActionsSheet
+import com.example.debitter.ui.recent.components.RecentTile
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
@@ -54,13 +55,17 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Unit, onEdit: (SavedNote) -> Unit, onDelete: (String) -> Unit, state: RecentState, modifier: Modifier = Modifier) {
+fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Unit, onDelete: (SavedDocument) -> Unit, onEdit: (SavedDocument) -> Unit, kind: DocumentKind, state: RecentState, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val entries: List<SavedDocument> = when (kind) {
+        DocumentKind.DEBIT_NOTE -> state.notes
+        DocumentKind.REFUND_LETTER -> state.letters
+    }
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
 
-    var selected by remember { mutableStateOf<SavedNote?>(null) }
+    var selected by remember { mutableStateOf<SavedDocument?>(null) }
 
     LaunchedEffect(message) {
         if (message == null) return@LaunchedEffect
@@ -89,14 +94,14 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
                 state.isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(modifier = Modifier.size(AppSpacing.progressIndicator), color = AppColors.primary, strokeWidth = AppSpacing.progressStroke)
                 }
-                state.notes.isEmpty() -> EmptyState()
+                entries.isEmpty() -> EmptyState(kind = kind)
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = AppSpacing.lg, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding, top = AppSpacing.lg),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
                 ) {
-                    items(items = state.notes, key = { it.id }) { saved ->
-                        RecentNoteTile(onClick = { selected = saved }, saved = saved)
+                    items(items = entries, key = { it.id }) { saved ->
+                        RecentTile(onClick = { selected = saved }, saved = saved)
                     }
                 }
             }
@@ -106,11 +111,11 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
     val opened = selected
 
     if (opened != null) {
-        NoteActionsSheet(
+        RecentActionsSheet(
             onDelete = {
                 selected = null
-                onDelete(opened.id)
-                scope.launch { snackbarState.showBrief("That note was removed from this list. The PDF you saved to Downloads is not affected.") }
+                onDelete(opened)
+                scope.launch { snackbarState.showBrief("That ${kind.noun} was removed from this list. The PDF you saved to Downloads is not affected.") }
             },
             onDismiss = { selected = null },
             onEdit = {
@@ -120,7 +125,7 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
             onSaveCopy = {
                 selected = null
                 scope.launch {
-                    val location = runCatching { withContext(Dispatchers.IO) { exporter.saveToDownloads(exporter.render(opened.note), exporter.fileName()) } }.getOrNull()
+                    val location = runCatching { withContext(Dispatchers.IO) { exporter.saveToDownloads(exporter.render(opened.document), opened.document) } }.getOrNull()
 
                     if (location == null) {
                         snackbarState.showError("That copy could not be saved to Downloads. Check the phone storage and try again.")
@@ -132,13 +137,13 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
             onShare = {
                 selected = null
                 scope.launch {
-                    val intent = runCatching { withContext(Dispatchers.IO) { exporter.shareIntent(exporter.render(opened.note), exporter.fileName()) } }.getOrNull()
+                    val intent = runCatching { withContext(Dispatchers.IO) { exporter.shareIntent(exporter.render(opened.document), opened.document) } }.getOrNull()
 
                     if (intent == null) {
-                        snackbarState.showError("That note could not be prepared for sharing. Check the phone storage and try again.")
+                        snackbarState.showError("That ${kind.noun} could not be prepared for sharing. Check the phone storage and try again.")
                         return@launch
                     }
-                    context.startActivity(Intent.createChooser(intent, "Share debit note"))
+                    context.startActivity(Intent.createChooser(intent, "Share ${kind.noun}"))
                 }
             },
             saved = opened,
@@ -147,7 +152,7 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
+private fun EmptyState(kind: DocumentKind, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize().padding(AppSpacing.screenPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -165,11 +170,11 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             )
         }
         Spacer(modifier = Modifier.height(AppSpacing.lg))
-        Text(maxLines = 1, style = AppTextStyles.listPrimary, text = "No debit notes yet")
+        Text(maxLines = 1, style = AppTextStyles.listPrimary, text = "No ${kind.noun}s yet")
         Spacer(modifier = Modifier.height(AppSpacing.sm))
         Text(
             style = AppTextStyles.listSecondary,
-            text = "Every note you save stays here until you delete it, ready to edit or save again.",
+            text = "Every ${kind.noun} you save stays here until you delete it, ready to edit or save again.",
             textAlign = TextAlign.Center,
         )
     }

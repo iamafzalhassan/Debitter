@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.debitter.model.DebitNote
+import com.example.debitter.model.PrintDocument
 import com.example.debitter.pdf.PdfExporter
 import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
@@ -62,42 +62,42 @@ private const val PREVIEW_FILE: String = "preview.pdf"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
+fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, document: PrintDocument, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val exporter = remember(context) { PdfExporter(context) }
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
-    val document by produceState<PreviewDocument?>(initialValue = null, exporter, note) {
-        value = withContext(Dispatchers.IO) { renderDocument(exporter, note) }
+    val preview by produceState<PreviewDocument?>(initialValue = null, exporter, document) {
+        value = withContext(Dispatchers.IO) { renderDocument(exporter, document) }
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             PreviewActions(
-                isEnabled = document != null,
+                isEnabled = preview != null,
                 onSave = {
-                    val bytes = document?.bytes ?: return@PreviewActions
+                    val bytes = preview?.bytes ?: return@PreviewActions
                     scope.launch {
-                        val location = runCatching { withContext(Dispatchers.IO) { exporter.saveToDownloads(bytes, exporter.fileName()) } }.getOrNull()
+                        val location = runCatching { withContext(Dispatchers.IO) { exporter.saveToDownloads(bytes, document) } }.getOrNull()
 
                         if (location == null) {
-                            snackbarState.showError("The debit note could not be saved to Downloads. Check the phone storage and try again.")
+                            snackbarState.showError("The ${document.kind.noun} could not be saved to Downloads. Check the phone storage and try again.")
                             return@launch
                         }
                         onSaved(location)
                     }
                 },
                 onShare = {
-                    val bytes = document?.bytes ?: return@PreviewActions
+                    val bytes = preview?.bytes ?: return@PreviewActions
                     scope.launch {
-                        val intent = runCatching { withContext(Dispatchers.IO) { exporter.shareIntent(bytes, exporter.fileName()) } }.getOrNull()
+                        val intent = runCatching { withContext(Dispatchers.IO) { exporter.shareIntent(bytes, document) } }.getOrNull()
 
                         if (intent == null) {
-                            snackbarState.showError("The debit note could not be prepared for sharing. Check the phone storage and try again.")
+                            snackbarState.showError("The ${document.kind.noun} could not be prepared for sharing. Check the phone storage and try again.")
                             return@launch
                         }
-                        context.startActivity(Intent.createChooser(intent, "Share debit note"))
+                        context.startActivity(Intent.createChooser(intent, "Share ${document.kind.noun}"))
                     }
                 },
             )
@@ -116,7 +116,7 @@ fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, note: Deb
             )
         },
     ) { padding ->
-        val pages = document?.pages
+        val pages = preview?.pages
 
         if (pages == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
@@ -158,8 +158,8 @@ private fun PreviewActions(isEnabled: Boolean, onSave: () -> Unit, onShare: () -
 
 private class PreviewDocument(val bytes: ByteArray, val pages: List<ImageBitmap>)
 
-private fun renderDocument(exporter: PdfExporter, note: DebitNote): PreviewDocument {
-    val bytes = exporter.render(note)
+private fun renderDocument(exporter: PdfExporter, document: PrintDocument): PreviewDocument {
+    val bytes = exporter.render(document)
     val file = exporter.cacheFile(bytes, PREVIEW_FILE)
 
     ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->

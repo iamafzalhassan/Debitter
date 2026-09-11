@@ -1,7 +1,6 @@
 package com.example.debitter.model
 
 import androidx.compose.runtime.Immutable
-import java.io.Serializable
 import java.math.BigDecimal
 
 @Immutable
@@ -12,7 +11,7 @@ data class DebitNote(
     val company: CompanyBlock,
     val header: NoteHeader,
     val labels: NoteLabels,
-) : Serializable {
+) : PrintDocument {
     val hasCharges: Boolean get() = statutory.any { it.isPrintable } || other.any { it.isPrintable }
     val showsAdvance: Boolean get() = advanceReceived != null
 
@@ -33,4 +32,6 @@ data class DebitNote(
     }
 
     private fun sum(lines: List<ChargeLine>): BigDecimal = lines.fold(BigDecimal.ZERO) { running, line -> if (line.isPrintable) running + line.amount!! else running }
+
+    override val kind: DocumentKind get() = DocumentKind.DEBIT_NOTE
 }

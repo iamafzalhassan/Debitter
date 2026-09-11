@@ -11,66 +11,145 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.debitter.model.DocumentKind
+import com.example.debitter.model.SavedDocument
+import com.example.debitter.model.SavedLetter
+import com.example.debitter.model.SavedNote
 import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.editor.EditorEvent
 import com.example.debitter.ui.editor.EditorScreen
 import com.example.debitter.ui.editor.EditorViewModel
+import com.example.debitter.ui.home.HomeScreen
+import com.example.debitter.ui.letter.LetterEvent
+import com.example.debitter.ui.letter.LetterScreen
+import com.example.debitter.ui.letter.LetterViewModel
 import com.example.debitter.ui.preview.PreviewScreen
 import com.example.debitter.ui.recent.RecentScreen
 import com.example.debitter.ui.recent.RecentViewModel
 
-private const val ROUTE_EDITOR: String = "editor"
-private const val ROUTE_PREVIEW: String = "preview"
-private const val ROUTE_RECENT: String = "recent"
+private const val ROUTE_HOME: String = "home"
+private const val ROUTE_LETTER: String = "letter"
+private const val ROUTE_LETTER_PREVIEW: String = "letter-preview"
+private const val ROUTE_LETTER_RECENT: String = "letter-recent"
+private const val ROUTE_NOTE: String = "note"
+private const val ROUTE_NOTE_PREVIEW: String = "note-preview"
+private const val ROUTE_NOTE_RECENT: String = "note-recent"
 
 @Composable
 fun DebitterApp() {
     val context = LocalContext.current
     val editorViewModel: EditorViewModel = viewModel()
+    val letterViewModel: LetterViewModel = viewModel()
     val recentViewModel: RecentViewModel = viewModel(factory = RecentViewModel.factory(context))
     val navController = rememberNavController()
+    val onEdit: (SavedDocument) -> Unit = { saved ->
+        when (saved) {
+            is SavedLetter -> {
+                letterViewModel.onEvent(LetterEvent.LoadLetter(letter = saved.letter))
+                navController.popBackStack(ROUTE_LETTER, false)
+            }
+            is SavedNote -> {
+                editorViewModel.onEvent(EditorEvent.LoadNote(note = saved.note))
+                navController.popBackStack(ROUTE_NOTE, false)
+            }
+        }
+    }
 
     var savedMessage by remember { mutableStateOf<String?>(null) }
 
-    NavHost(navController = navController, startDestination = ROUTE_EDITOR) {
-        composable(ROUTE_EDITOR) {
+    NavHost(navController = navController, startDestination = ROUTE_HOME) {
+        composable(ROUTE_HOME) {
+            HomeScreen(
+                onOpen = { kind ->
+                    navController.navigate(
+                        when (kind) {
+                            DocumentKind.DEBIT_NOTE -> ROUTE_NOTE
+                            DocumentKind.REFUND_LETTER -> ROUTE_LETTER
+                        },
+                    )
+                },
+            )
+        }
+        composable(ROUTE_NOTE) {
             val note by editorViewModel.state.collectAsStateWithLifecycle()
 
             EditorScreen(
                 note = note,
+                onBack = { navController.popBackStack() },
                 onEvent = editorViewModel::onEvent,
-                onPreview = { navController.navigate(ROUTE_PREVIEW) },
+                onPreview = { navController.navigate(ROUTE_NOTE_PREVIEW) },
                 onRecent = {
                     recentViewModel.refresh()
-                    navController.navigate(ROUTE_RECENT)
+                    navController.navigate(ROUTE_NOTE_RECENT)
                 },
             )
         }
-        composable(ROUTE_PREVIEW) {
+        composable(ROUTE_NOTE_PREVIEW) {
             val note by editorViewModel.state.collectAsStateWithLifecycle()
 
             PreviewScreen(
-                note = note,
+                document = note,
                 onBack = { navController.popBackStack() },
                 onSaved = { location ->
                     recentViewModel.save(note)
                     savedMessage = locationMessage(location)
-                    navController.navigate(ROUTE_RECENT) { popUpTo(ROUTE_EDITOR) }
+                    navController.navigate(ROUTE_NOTE_RECENT) { popUpTo(ROUTE_NOTE) }
                     editorViewModel.onEvent(EditorEvent.Reset)
                 },
             )
         }
-        composable(ROUTE_RECENT) {
+        composable(ROUTE_NOTE_RECENT) {
             val recentState by recentViewModel.state.collectAsStateWithLifecycle()
 
             RecentScreen(
+                kind = DocumentKind.DEBIT_NOTE,
                 message = savedMessage,
                 onBack = { navController.popBackStack() },
                 onDelete = recentViewModel::delete,
-                onEdit = { saved ->
-                    editorViewModel.onEvent(EditorEvent.LoadNote(note = saved.note))
-                    navController.popBackStack(ROUTE_EDITOR, false)
+                onEdit = onEdit,
+                onMessageShown = { savedMessage = null },
+                state = recentState,
+            )
+        }
+        composable(ROUTE_LETTER) {
+            val letter by letterViewModel.state.collectAsStateWithLifecycle()
+
+            LetterScreen(
+                agents = letterViewModel.agents,
+                letter = letter,
+                letterheads = letterViewModel.letterheads,
+                onBack = { navController.popBackStack() },
+                onEvent = letterViewModel::onEvent,
+                onPreview = { navController.navigate(ROUTE_LETTER_PREVIEW) },
+                onRecent = {
+                    recentViewModel.refresh()
+                    navController.navigate(ROUTE_LETTER_RECENT)
                 },
+            )
+        }
+        composable(ROUTE_LETTER_PREVIEW) {
+            val letter by letterViewModel.state.collectAsStateWithLifecycle()
+
+            PreviewScreen(
+                document = letter,
+                onBack = { navController.popBackStack() },
+                onSaved = { location ->
+                    recentViewModel.save(letter)
+                    savedMessage = locationMessage(location)
+                    navController.navigate(ROUTE_LETTER_RECENT) { popUpTo(ROUTE_LETTER) }
+                    letterViewModel.onEvent(LetterEvent.Reset)
+                },
+            )
+        }
+        composable(ROUTE_LETTER_RECENT) {
+            val recentState by recentViewModel.state.collectAsStateWithLifecycle()
+
+            RecentScreen(
+                kind = DocumentKind.REFUND_LETTER,
+                message = savedMessage,
+                onBack = { navController.popBackStack() },
+                onDelete = recentViewModel::delete,
+                onEdit = onEdit,
                 onMessageShown = { savedMessage = null },
                 state = recentState,
             )
