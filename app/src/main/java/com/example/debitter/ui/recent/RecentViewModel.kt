@@ -11,7 +11,6 @@ import com.example.debitter.data.RecentNotesRepository
 import com.example.debitter.data.sources.NoteDatabase
 import com.example.debitter.model.DebitNote
 import com.example.debitter.model.SavedNote
-import com.example.debitter.model.ShipmentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,9 +53,9 @@ class RecentViewModel(private val repository: RecentNotesRepository) : ViewModel
         }
     }
 
-    fun save(note: DebitNote, shipmentType: ShipmentType) {
+    fun save(note: DebitNote) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { repository.save(note, shipmentType) }
+            withContext(Dispatchers.IO) { repository.save(note) }
             refresh()
         }
     }

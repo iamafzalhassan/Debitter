@@ -1,6 +1,5 @@
 package com.example.debitter.ui.editor
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.debitter.data.ChargePresets
@@ -8,51 +7,53 @@ import com.example.debitter.data.Defaults
 import com.example.debitter.model.ChargeLine
 import com.example.debitter.model.ChargeSection
 import com.example.debitter.model.DebitNote
-import com.example.debitter.model.ShipmentType
 import com.example.debitter.model.with
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.io.Serializable
 import java.time.LocalDate
 import java.util.UUID
 
-@Immutable
-data class EditorState(val note: DebitNote, val shipmentType: ShipmentType) : Serializable
-
 class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
     companion object {
-        const val STATE_KEY: String = "editor-state"
+        const val STATE_KEY: String = "editor-note"
     }
 
-    private val mutableState: MutableStateFlow<EditorState> = MutableStateFlow(savedState.get<EditorState>(STATE_KEY) ?: initial())
+    private val mutableState: MutableStateFlow<DebitNote> = MutableStateFlow(savedState.get<DebitNote>(STATE_KEY) ?: Defaults.note())
 
-    val state: StateFlow<EditorState> = mutableState.asStateFlow()
+    val state: StateFlow<DebitNote> = mutableState.asStateFlow()
 
     fun onEvent(event: EditorEvent) {
         when (event) {
             is EditorEvent.AddCharge -> updateLines(event.section) { it + ChargeLine.custom() }
-            is EditorEvent.LoadNote -> update { EditorState(note = event.note.copy(header = event.note.header.copy(date = LocalDate.now())), shipmentType = event.shipmentType) }
-            is EditorEvent.Reset -> update { initial() }
-            is EditorEvent.SetAdvance -> updateNote { it.copy(advanceReceived = event.amount) }
+            is EditorEvent.LoadNote -> update { withPresets(event.note.copy(header = event.note.header.copy(date = LocalDate.now()))) }
+            is EditorEvent.Reset -> update { Defaults.note() }
+            is EditorEvent.SetAdvance -> update { it.copy(advanceReceived = event.amount) }
             is EditorEvent.SetChargeAmount -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(amount = event.amount) else it } }
             is EditorEvent.SetChargeLabel -> updateLines(event.section) { lines -> lines.map { if (it.id == event.id) it.copy(label = event.label) else it } }
-            is EditorEvent.SetCompanyField -> updateNote { it.copy(company = it.company.with(event.field, event.value)) }
-            is EditorEvent.SetHeaderField -> updateNote { it.copy(header = it.header.with(event.field, event.value)) }
-            is EditorEvent.SetLabel -> updateNote { it.copy(labels = it.labels.with(event.field, event.value)) }
-            is EditorEvent.SetShipmentType -> update { applyShipmentType(it, event.type) }
+            is EditorEvent.SetCompanyField -> update { it.copy(company = it.company.with(event.field, event.value)) }
+            is EditorEvent.SetHeaderField -> update { it.copy(header = it.header.with(event.field, event.value)) }
+            is EditorEvent.SetLabel -> update { it.copy(labels = it.labels.with(event.field, event.value)) }
         }
     }
 
-    private fun initial(): EditorState = EditorState(note = Defaults.note(), shipmentType = Defaults.shipmentType)
+    private fun withPresets(note: DebitNote): DebitNote = note.copy(other = rostered(note.other, ChargeSection.OTHER), statutory = rostered(note.statutory, ChargeSection.STATUTORY))
 
-    private fun updateLines(section: ChargeSection, block: (List<ChargeLine>) -> List<ChargeLine>) = updateNote { it.withLines(section, block(it.lines(section))) }
+    private fun rostered(current: List<ChargeLine>, section: ChargeSection): List<ChargeLine> {
+        val claimed = mutableSetOf<UUID>()
+        val presets = ChargePresets.labels(section).map { label ->
+            val match = current.firstOrNull { it.label == label && it.id !in claimed }
 
-    private fun updateNote(block: (DebitNote) -> DebitNote) = update { it.copy(note = block(it.note)) }
+            if (match == null) ChargeLine.preset(label = label, appendsSuffix = ChargePresets.appendsSuffix(label)) else match.also { claimed += it.id }
+        }
 
-    private fun update(block: (EditorState) -> EditorState) {
-        val edited = block(mutableState.value)
-        val next = edited.copy(note = withValidAdvance(edited.note))
+        return presets + current.filter { it.id !in claimed }
+    }
+
+    private fun updateLines(section: ChargeSection, block: (List<ChargeLine>) -> List<ChargeLine>) = update { it.withLines(section, block(it.lines(section))) }
+
+    private fun update(block: (DebitNote) -> DebitNote) {
+        val next = withValidAdvance(block(mutableState.value))
 
         mutableState.value = next
         savedState[STATE_KEY] = next
@@ -64,29 +65,5 @@ class EditorViewModel(private val savedState: SavedStateHandle) : ViewModel() {
 
         if (advance <= subTotal) return note
         return note.copy(advanceReceived = subTotal.takeIf { it.signum() > 0 })
-    }
-
-    private fun applyShipmentType(state: EditorState, type: ShipmentType): EditorState {
-        if (state.shipmentType == type) return state
-
-        val note = state.note
-        val other = reroster(note.other, ChargeSection.OTHER, state.shipmentType, type)
-        val statutory = reroster(note.statutory, ChargeSection.STATUTORY, state.shipmentType, type)
-
-        return state.copy(note = note.copy(other = other, statutory = statutory), shipmentType = type)
-    }
-
-    private fun reroster(current: List<ChargeLine>, section: ChargeSection, from: ShipmentType, to: ShipmentType): List<ChargeLine> {
-        val outgoing = ChargePresets.labels(section, from).toSet()
-        val incoming = ChargePresets.labels(section, to)
-        val claimed = mutableSetOf<UUID>()
-        val rostered = incoming.map { label ->
-            val match = current.firstOrNull { it.label == label && it.id !in claimed }
-
-            if (match == null) ChargeLine.preset(label = label, appendsSuffix = ChargePresets.appendsSuffix(label)) else match.also { claimed += it.id }
-        }
-        val carried = current.filter { it.id !in claimed && (it.label !in outgoing || it.isPrintable) }
-
-        return rostered + carried
     }
 }

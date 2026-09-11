@@ -25,7 +25,6 @@ object AppSpacing {
     val radiusField: Dp = 10.dp
     val screenPadding: Dp = 16.dp
     val sm: Dp = 8.dp
-    val touchTarget: Dp = 48.dp
     val xl: Dp = 24.dp
     val xs: Dp = 4.dp
     val xxs: Dp = 2.dp

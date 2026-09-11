@@ -5,13 +5,10 @@ import com.example.debitter.model.CompanyBlock
 import com.example.debitter.model.DebitNote
 import com.example.debitter.model.NoteHeader
 import com.example.debitter.model.NoteLabels
-import com.example.debitter.model.ShipmentType
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
 import java.util.UUID
-
-data class DecodedNote(val note: DebitNote, val shipmentType: ShipmentType)
 
 object NoteJson {
     private const val KEY_ADDRESS_LINE: String = "addressLine"
@@ -34,7 +31,6 @@ object NoteJson {
     private const val KEY_NAME: String = "name"
     private const val KEY_OTHER: String = "other"
     private const val KEY_OTHER_SECTION: String = "otherSection"
-    private const val KEY_SHIPMENT_TYPE: String = "shipmentType"
     private const val KEY_SIGNATURE: String = "signature"
     private const val KEY_STATUTORY: String = "statutory"
     private const val KEY_STATUTORY_SECTION: String = "statutorySection"
@@ -44,30 +40,26 @@ object NoteJson {
     private const val KEY_VESSEL_FLIGHT: String = "vesselFlight"
     private const val KEY_VOYAGE_NO_DATE: String = "voyageNoDate"
 
-    fun decode(payload: String): DecodedNote? = runCatching {
+    fun decode(payload: String): DebitNote? = runCatching {
         val root = JSONObject(payload)
 
-        DecodedNote(
-            note = DebitNote(
-                other = decodeLines(root.optJSONArray(KEY_OTHER)),
-                statutory = decodeLines(root.optJSONArray(KEY_STATUTORY)),
-                advanceReceived = root.optString(KEY_ADVANCE_RECEIVED).takeIf { it.isNotBlank() }?.toBigDecimalOrNull(),
-                company = decodeCompany(root.optJSONObject(KEY_COMPANY)),
-                header = decodeHeader(root.optJSONObject(KEY_HEADER)),
-                labels = decodeLabels(root.optJSONObject(KEY_LABELS)),
-            ),
-            shipmentType = decodeShipmentType(root.optString(KEY_SHIPMENT_TYPE)),
+        DebitNote(
+            other = decodeLines(root.optJSONArray(KEY_OTHER)),
+            statutory = decodeLines(root.optJSONArray(KEY_STATUTORY)),
+            advanceReceived = root.optString(KEY_ADVANCE_RECEIVED).takeIf { it.isNotBlank() }?.toBigDecimalOrNull(),
+            company = decodeCompany(root.optJSONObject(KEY_COMPANY)),
+            header = decodeHeader(root.optJSONObject(KEY_HEADER)),
+            labels = decodeLabels(root.optJSONObject(KEY_LABELS)),
         )
     }.getOrNull()
 
-    fun encode(note: DebitNote, shipmentType: ShipmentType): String = JSONObject()
+    fun encode(note: DebitNote): String = JSONObject()
         .put(KEY_OTHER, encodeLines(note.other))
         .put(KEY_STATUTORY, encodeLines(note.statutory))
         .put(KEY_ADVANCE_RECEIVED, note.advanceReceived?.toPlainString())
         .put(KEY_COMPANY, encodeCompany(note.company))
         .put(KEY_HEADER, encodeHeader(note.header))
         .put(KEY_LABELS, encodeLabels(note.labels))
-        .put(KEY_SHIPMENT_TYPE, shipmentType.name)
         .toString()
 
     private fun decodeLines(array: JSONArray?): List<ChargeLine> {
@@ -136,8 +128,6 @@ object NoteJson {
             voyageNoDate = json.optString(KEY_VOYAGE_NO_DATE, fallback.voyageNoDate),
         )
     }
-
-    private fun decodeShipmentType(name: String): ShipmentType = ShipmentType.entries.firstOrNull { it.name == name } ?: Defaults.shipmentType
 
     private fun encodeLines(lines: List<ChargeLine>): JSONArray {
         val array = JSONArray()

@@ -6,7 +6,6 @@ import com.example.debitter.model.CompanyBlock
 import com.example.debitter.model.DebitNote
 import com.example.debitter.model.NoteHeader
 import com.example.debitter.model.NoteLabels
-import com.example.debitter.model.ShipmentType
 import java.time.LocalDate
 
 object Defaults {
@@ -35,18 +34,16 @@ object Defaults {
         voyageNoDate = "VOYAGE NO/DATE",
     )
 
-    val shipmentType: ShipmentType = ShipmentType.CONTAINER
-
-    fun note(type: ShipmentType = shipmentType, today: LocalDate = LocalDate.now()): DebitNote = DebitNote(
-        other = lines(ChargeSection.OTHER, type),
-        statutory = lines(ChargeSection.STATUTORY, type),
+    fun note(today: LocalDate = LocalDate.now()): DebitNote = DebitNote(
+        other = lines(ChargeSection.OTHER),
+        statutory = lines(ChargeSection.STATUTORY),
         advanceReceived = null,
         company = company,
         header = header(today),
         labels = labels,
     )
 
-    fun lines(section: ChargeSection, type: ShipmentType): List<ChargeLine> = ChargePresets.labels(section, type).map { ChargeLine.preset(label = it, appendsSuffix = ChargePresets.appendsSuffix(it)) }
+    fun lines(section: ChargeSection): List<ChargeLine> = ChargePresets.labels(section).map { ChargeLine.preset(label = it, appendsSuffix = ChargePresets.appendsSuffix(it)) }
 
     private fun header(today: LocalDate): NoteHeader = NoteHeader(
         billTo = "",

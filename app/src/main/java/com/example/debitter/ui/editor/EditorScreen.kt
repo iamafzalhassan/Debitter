@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.ChargeSection
+import com.example.debitter.model.DebitNote
 import com.example.debitter.ui.components.AppSnackbarHost
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
@@ -36,7 +37,6 @@ import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.editor.components.AdvanceSheet
 import com.example.debitter.ui.editor.components.DocumentTextPanel
 import com.example.debitter.ui.editor.components.HeaderFields
-import com.example.debitter.ui.editor.components.ShipmentTypeSelector
 import com.example.debitter.ui.editor.components.TotalsBlock
 import com.example.debitter.ui.editor.components.chargeSection
 import com.example.debitter.ui.theme.AppColors
@@ -46,8 +46,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(onPreview: () -> Unit, onRecent: () -> Unit, onEvent: (EditorEvent) -> Unit, state: EditorState, modifier: Modifier = Modifier) {
-    val note = state.note
+fun EditorScreen(onPreview: () -> Unit, onRecent: () -> Unit, onEvent: (EditorEvent) -> Unit, note: DebitNote, modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
     val snackbarState = rememberAppSnackbarState()
 
@@ -74,13 +73,6 @@ fun EditorScreen(onPreview: () -> Unit, onRecent: () -> Unit, onEvent: (EditorEv
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(bottom = AppSpacing.lg, top = AppSpacing.lg),
         ) {
-            item(key = "shipment-type") {
-                ShipmentTypeSelector(
-                    modifier = Modifier.padding(bottom = AppSpacing.xl),
-                    onSelect = { onEvent(EditorEvent.SetShipmentType(it)) },
-                    selected = state.shipmentType,
-                )
-            }
             item(key = "document-text") {
                 DocumentTextPanel(
                     modifier = Modifier.padding(bottom = AppSpacing.xl, end = AppSpacing.screenPadding, start = AppSpacing.screenPadding),

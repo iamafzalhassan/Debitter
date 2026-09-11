@@ -34,26 +34,26 @@ fun DebitterApp() {
 
     NavHost(navController = navController, startDestination = ROUTE_EDITOR) {
         composable(ROUTE_EDITOR) {
-            val editorState by editorViewModel.state.collectAsStateWithLifecycle()
+            val note by editorViewModel.state.collectAsStateWithLifecycle()
 
             EditorScreen(
+                note = note,
                 onEvent = editorViewModel::onEvent,
                 onPreview = { navController.navigate(ROUTE_PREVIEW) },
                 onRecent = {
                     recentViewModel.refresh()
                     navController.navigate(ROUTE_RECENT)
                 },
-                state = editorState,
             )
         }
         composable(ROUTE_PREVIEW) {
-            val editorState by editorViewModel.state.collectAsStateWithLifecycle()
+            val note by editorViewModel.state.collectAsStateWithLifecycle()
 
             PreviewScreen(
-                note = editorState.note,
+                note = note,
                 onBack = { navController.popBackStack() },
                 onSaved = { location ->
-                    recentViewModel.save(editorState.note, editorState.shipmentType)
+                    recentViewModel.save(note)
                     savedMessage = locationMessage(location)
                     navController.navigate(ROUTE_RECENT) { popUpTo(ROUTE_EDITOR) }
                     editorViewModel.onEvent(EditorEvent.Reset)
@@ -68,7 +68,7 @@ fun DebitterApp() {
                 onBack = { navController.popBackStack() },
                 onDelete = recentViewModel::delete,
                 onEdit = { saved ->
-                    editorViewModel.onEvent(EditorEvent.LoadNote(note = saved.note, shipmentType = saved.shipmentType))
+                    editorViewModel.onEvent(EditorEvent.LoadNote(note = saved.note))
                     navController.popBackStack(ROUTE_EDITOR, false)
                 },
                 onMessageShown = { savedMessage = null },
