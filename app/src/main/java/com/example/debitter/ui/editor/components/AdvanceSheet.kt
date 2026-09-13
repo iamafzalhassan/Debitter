@@ -49,6 +49,7 @@ fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecima
             AmountField(
                 modifier = Modifier.fillMaxWidth(),
                 isAutoFocused = true,
+                label = "Advance",
                 onSubmit = { if (isValid) hideThen({ onSave(amount) }) },
                 onValueChange = { draft = it },
                 value = advance,

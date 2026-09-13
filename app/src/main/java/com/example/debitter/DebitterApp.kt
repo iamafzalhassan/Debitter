@@ -26,6 +26,8 @@ import com.example.debitter.ui.letter.LetterViewModel
 import com.example.debitter.ui.preview.PreviewScreen
 import com.example.debitter.ui.recent.RecentScreen
 import com.example.debitter.ui.recent.RecentViewModel
+import com.example.debitter.ui.settings.SettingsScreen
+import com.example.debitter.ui.settings.SettingsViewModel
 
 private const val ROUTE_HOME: String = "home"
 private const val ROUTE_LETTER: String = "letter"
@@ -34,6 +36,7 @@ private const val ROUTE_LETTER_RECENT: String = "letter-recent"
 private const val ROUTE_NOTE: String = "note"
 private const val ROUTE_NOTE_PREVIEW: String = "note-preview"
 private const val ROUTE_NOTE_RECENT: String = "note-recent"
+private const val ROUTE_SETTINGS: String = "settings"
 
 @Composable
 fun DebitterApp() {
@@ -41,6 +44,7 @@ fun DebitterApp() {
     val editorViewModel: EditorViewModel = viewModel()
     val letterViewModel: LetterViewModel = viewModel()
     val recentViewModel: RecentViewModel = viewModel(factory = RecentViewModel.factory(context))
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(context))
     val navController = rememberNavController()
     val onEdit: (SavedDocument) -> Unit = { saved ->
         when (saved) {
@@ -68,13 +72,27 @@ fun DebitterApp() {
                         },
                     )
                 },
+                onSettings = { navController.navigate(ROUTE_SETTINGS) },
+            )
+        }
+        composable(ROUTE_SETTINGS) {
+            val settings by settingsViewModel.state.collectAsStateWithLifecycle()
+
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onDeleteAgent = settingsViewModel::deleteAgent,
+                onDeleteCustomer = settingsViewModel::deleteCustomer,
+                onSaveAgent = settingsViewModel::saveAgent,
+                onSaveCustomer = settingsViewModel::saveCustomer,
+                state = settings,
             )
         }
         composable(ROUTE_NOTE) {
             val note by editorViewModel.state.collectAsStateWithLifecycle()
+            val settings by settingsViewModel.state.collectAsStateWithLifecycle()
 
             EditorScreen(
-                customers = editorViewModel.customers,
+                customers = settings.noteCustomers,
                 note = note,
                 onBack = { navController.popBackStack() },
                 onEvent = editorViewModel::onEvent,
@@ -114,11 +132,12 @@ fun DebitterApp() {
         }
         composable(ROUTE_LETTER) {
             val letter by letterViewModel.state.collectAsStateWithLifecycle()
+            val settings by settingsViewModel.state.collectAsStateWithLifecycle()
 
             LetterScreen(
-                agents = letterViewModel.agents,
+                agents = settings.shippingAgents,
                 letter = letter,
-                letterheads = letterViewModel.letterheads,
+                letterheads = settings.letterheads,
                 onBack = { navController.popBackStack() },
                 onEvent = letterViewModel::onEvent,
                 onPreview = { navController.navigate(ROUTE_LETTER_PREVIEW) },

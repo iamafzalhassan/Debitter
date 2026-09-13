@@ -101,7 +101,7 @@ fun AppPlainField(value: String, onValueChange: (String) -> Unit, modifier: Modi
 }
 
 @Composable
-private fun FieldFrame(label: String, textAlign: TextAlign, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun FieldFrame(label: String, textAlign: TextAlign, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(
         modifier = modifier
             .fillMaxWidth()

@@ -3,10 +3,7 @@ package com.example.debitter.ui.letter
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.debitter.data.Defaults
-import com.example.debitter.data.LetterPresets
-import com.example.debitter.model.Letterhead
 import com.example.debitter.model.RefundLetter
-import com.example.debitter.model.ShippingAgent
 import com.example.debitter.model.with
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,10 +14,6 @@ class LetterViewModel(private val savedState: SavedStateHandle) : ViewModel() {
     companion object {
         const val STATE_KEY: String = "editor-letter"
     }
-
-    val letterheads: List<Letterhead> = LetterPresets.letterheads
-
-    val agents: List<ShippingAgent> = LetterPresets.agents
 
     private val mutableState: MutableStateFlow<RefundLetter> = MutableStateFlow(savedState.get<RefundLetter>(STATE_KEY) ?: Defaults.letter())
 

@@ -45,6 +45,7 @@ fun AmountField(
     value: BigDecimal?,
     modifier: Modifier = Modifier,
     isAutoFocused: Boolean = false,
+    label: String? = null,
     onSubmit: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
@@ -65,14 +66,7 @@ fun AmountField(
         if (isFocused) field = field.copy(selection = TextRange(0, field.text.length))
     }
 
-    Box(
-        modifier = modifier
-            .height(AppSpacing.controlHeight)
-            .clip(RoundedCornerShape(AppSpacing.radiusField))
-            .background(AppColors.surfaceField)
-            .padding(horizontal = AppSpacing.md),
-        contentAlignment = Alignment.CenterEnd,
-    ) {
+    val input: @Composable () -> Unit = {
         BasicTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,6 +89,23 @@ fun AmountField(
             value = field,
             visualTransformation = transformation,
         )
+    }
+
+    if (label == null) {
+        Box(
+            modifier = modifier
+                .height(AppSpacing.controlHeight)
+                .clip(RoundedCornerShape(AppSpacing.radiusField))
+                .background(AppColors.surfaceField)
+                .padding(horizontal = AppSpacing.md),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
+            input()
+        }
+    } else {
+        FieldFrame(modifier = modifier, label = label, textAlign = TextAlign.End) {
+            input()
+        }
     }
 }
 
