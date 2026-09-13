@@ -12,14 +12,12 @@ import com.example.debitter.util.MoneyFormat
 import java.io.ByteArrayOutputStream
 import java.math.BigDecimal
 
-private const val SINGLE_PAGE: Int = 1
-
 class DebitNotePdfGenerator(private val layout: PdfLayout) {
     fun render(note: DebitNote): ByteArray {
         val document = PdfDocument()
 
         try {
-            val sheet = Sheet(countPages(note), document, layout)
+            val sheet = Sheet(document, layout)
 
             paint(sheet, note)
             sheet.finish()
@@ -28,20 +26,6 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
 
             document.writeTo(stream)
             return stream.toByteArray()
-        } finally {
-            document.close()
-        }
-    }
-
-    private fun countPages(note: DebitNote): Int {
-        val document = PdfDocument()
-
-        try {
-            val sheet = Sheet(SINGLE_PAGE, document, layout)
-
-            paint(sheet, note)
-            sheet.finish()
-            return sheet.number
         } finally {
             document.close()
         }
@@ -219,7 +203,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
     }
 }
 
-private class Sheet(private val pageCount: Int, private val document: PdfDocument, private val layout: PdfLayout) {
+private class Sheet(private val document: PdfDocument, private val layout: PdfLayout) {
     lateinit var canvas: Canvas
 
     var y: Float = 0f
@@ -248,7 +232,6 @@ private class Sheet(private val pageCount: Int, private val document: PdfDocumen
     fun finish() {
         val current = page ?: return
 
-        if (pageCount > 1) current.canvas.drawText("Page $number of $pageCount", layout.contentRight, layout.footerBaseline, layout.footerPaint)
         document.finishPage(current)
         page = null
     }

@@ -12,14 +12,12 @@ import com.example.debitter.model.value
 import com.example.debitter.util.DateFormat
 import java.io.ByteArrayOutputStream
 
-private const val SINGLE_PAGE: Int = 1
-
 class RefundLetterPdfGenerator(private val layout: LetterLayout) {
     fun render(letter: RefundLetter): ByteArray {
         val document = PdfDocument()
 
         try {
-            val sheet = LetterSheet(countPages(letter), document, layout)
+            val sheet = LetterSheet(document, layout)
 
             paint(sheet, letter)
             sheet.finish()
@@ -28,20 +26,6 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
 
             document.writeTo(stream)
             return stream.toByteArray()
-        } finally {
-            document.close()
-        }
-    }
-
-    private fun countPages(letter: RefundLetter): Int {
-        val document = PdfDocument()
-
-        try {
-            val sheet = LetterSheet(SINGLE_PAGE, document, layout)
-
-            paint(sheet, letter)
-            sheet.finish()
-            return sheet.number
         } finally {
             document.close()
         }
@@ -195,7 +179,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
     }
 }
 
-private class LetterSheet(private val pageCount: Int, private val document: PdfDocument, private val layout: LetterLayout) {
+private class LetterSheet(private val document: PdfDocument, private val layout: LetterLayout) {
     lateinit var canvas: Canvas
 
     var y: Float = 0f
@@ -224,7 +208,6 @@ private class LetterSheet(private val pageCount: Int, private val document: PdfD
     fun finish() {
         val current = page ?: return
 
-        if (pageCount > 1) current.canvas.drawText("Page $number of $pageCount", layout.contentRight, layout.footerBaseline, layout.footerPaint)
         document.finishPage(current)
         page = null
     }

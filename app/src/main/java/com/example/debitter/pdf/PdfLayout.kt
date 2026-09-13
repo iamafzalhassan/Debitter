@@ -13,8 +13,6 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         const val CHARGE_ROW_HEIGHT: Float = 18f
         const val COLON_OFFSET: Float = 76f
         const val COMPANY_NAME_SIZE: Float = 14f
-        const val FOOTER_HEIGHT: Float = 15f
-        const val FOOTER_SIZE: Float = 7.5f
         const val GAP_MD: Float = 10f
         const val GAP_SM: Float = 6f
         const val GAP_XS: Float = 3f
@@ -45,7 +43,6 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val bodyPaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.LEFT)
     val companyDetailPaint: Paint = textPaint(typefaces.regular, META_SIZE, INK_COLOR, Paint.Align.LEFT)
     val companyNamePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, LETTERHEAD_COLOR, Paint.Align.LEFT)
-    val footerPaint: Paint = textPaint(typefaces.regular, FOOTER_SIZE, INK_MUTED_COLOR, Paint.Align.RIGHT)
     val labelPaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.LEFT, TRACKING_LABEL)
     val metaStrongPaint: Paint = textPaint(typefaces.semiBold, META_SIZE, INK_COLOR, Paint.Align.LEFT)
     val rulePaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_THIN)
@@ -61,7 +58,6 @@ class PdfLayout(val typefaces: PdfTypefaces) {
             bodyPaint,
             companyDetailPaint,
             companyNamePaint,
-            footerPaint,
             labelPaint,
             metaStrongPaint,
             signaturePaint,
@@ -75,12 +71,11 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val amountRight: Float get() = contentRight - CELL_PAD_X
     val cellLeft: Float get() = contentLeft + CELL_PAD_X
     val chargeLabelWidth: Float get() = amountLeft - cellLeft - CELL_PAD_X
-    val contentBottom: Float get() = PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT
+    val contentBottom: Float get() = PAGE_HEIGHT - MARGIN
     val contentCenterX: Float get() = (contentLeft + contentRight) / 2f
     val contentLeft: Float get() = MARGIN
     val contentRight: Float get() = PAGE_WIDTH - MARGIN
     val contentTop: Float get() = MARGIN
-    val footerBaseline: Float get() = PAGE_HEIGHT - MARGIN - footerPaint.fontMetrics.descent
     val headerColumnWidth: Float get() = (contentRight - contentLeft - HEADER_COLUMN_GAP) / 2f
     val headerRightX: Float get() = contentLeft + headerColumnWidth + HEADER_COLUMN_GAP
     val headerValueWidth: Float get() = headerColumnWidth - COLON_OFFSET - GAP_SM
