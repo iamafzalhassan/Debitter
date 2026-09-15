@@ -107,6 +107,15 @@ docs/spec.md        Original specification
 - Open the project in Android Studio and run the `app` configuration, or run `./gradlew :app:assembleDebug`.
 - For a signed release, add a `keystore.properties` file at the project root with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`, then run `./gradlew :app:assembleRelease`.
 
+## Testing
+
+JUnit 4 tests live in `app/src/test/java`, mirroring the package of the code they cover:
+
+- **`util/MoneyFormatTest`**: amounts group into thousands with two decimals and round half up, input is parsed and sanitised to one decimal point and two fraction digits, and formatting from eight threads at once always gives the same result.
+- **`model/DebitNoteTest`**: the sub total counts only printable rows, and the total subtracts the advance.
+
+Run them with `./gradlew :app:testDebugUnitTest`.
+
 ## Roadmap
 
 - Enable R8 shrinking for release builds
