@@ -14,6 +14,23 @@ import java.io.ByteArrayOutputStream
 
 class RefundLetterPdfGenerator(private val layout: LetterLayout) {
     fun render(letter: RefundLetter): ByteArray {
+        var fitted = layout
+        var attempt = LetterPainter(fitted).render(letter)
+
+        while (attempt.isOverflowing && fitted.scale > LetterLayout.MIN_SCALE) {
+            fitted = fitted.scaledTo(nextScale(fitted, attempt))
+            attempt = LetterPainter(fitted).render(letter)
+        }
+        return attempt.bytes
+    }
+
+    private fun nextScale(fitted: LetterLayout, attempt: LetterSheetResult): Float = (fitted.scale * attempt.fitRatio).coerceAtMost(fitted.scale - LetterLayout.FIT_STEP).coerceAtLeast(LetterLayout.MIN_SCALE)
+}
+
+private class LetterSheetResult(val bytes: ByteArray, val fitRatio: Float, val isOverflowing: Boolean)
+
+private class LetterPainter(private val layout: LetterLayout) {
+    fun render(letter: RefundLetter): LetterSheetResult {
         val document = PdfDocument()
 
         try {
@@ -25,7 +42,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
             val stream = ByteArrayOutputStream()
 
             document.writeTo(stream)
-            return stream.toByteArray()
+            return LetterSheetResult(bytes = stream.toByteArray(), fitRatio = sheet.fitRatio, isOverflowing = sheet.isOverflowing)
         } finally {
             document.close()
         }
@@ -45,13 +62,13 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
 
     private fun drawLetterhead(sheet: LetterSheet, letterhead: Letterhead) {
         drawWrapped(sheet, letterhead.name, layout.letterheadNamePaint, layout.contentCenterX)
-        if (letterhead.name.isNotBlank()) sheet.y += LetterLayout.GAP_XS
+        if (letterhead.name.isNotBlank()) sheet.y += layout.gapXs
         drawWrapped(sheet, letterhead.tagline, layout.taglinePaint, layout.contentCenterX)
         drawWrapped(sheet, letterhead.addressLine, layout.letterheadDetailPaint, layout.contentCenterX)
         drawWrapped(sheet, letterhead.contactLine, layout.letterheadDetailPaint, layout.contentCenterX)
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
         drawRule(sheet)
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun drawRule(sheet: LetterSheet) {
@@ -67,7 +84,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
 
         if (printed.isEmpty()) return
         printed.forEach { drawWrapped(sheet, it, layout.bodyPaint, layout.contentLeft) }
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun punctuated(lines: List<String>): List<String> {
@@ -80,7 +97,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
         if (title.isBlank()) return
 
         drawWrapped(sheet, title, layout.titlePaint, layout.contentCenterX)
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun drawReferences(sheet: LetterSheet, labels: LetterLabels, references: LetterReferences) {
@@ -88,7 +105,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
 
         if (rows.isEmpty()) return
         rows.forEach { drawReferenceRow(sheet, it) }
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun drawReferenceRow(sheet: LetterSheet, row: Pair<String, String>) {
@@ -118,7 +135,7 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
             }
             layout.wrapWords(emphasised(paragraph, labels.emphasis), layout.contentWidth).forEach { drawWords(sheet, it) }
         }
-        sheet.y += LetterLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun emphasised(text: String, emphasis: String): List<TextRun> {
@@ -160,9 +177,9 @@ class RefundLetterPdfGenerator(private val layout: LetterLayout) {
         val signatory = listOf(labels.signatoryTitle, labels.signatoryName, labels.signatoryPhone).filter { it.isNotBlank() }
 
         if (closing.isEmpty() && signatory.isEmpty()) return
-        sheet.ensure((closing.size + signatory.size) * layout.lineHeight(layout.bodyPaint) + LetterLayout.SIGNATURE_SPACE)
+        sheet.ensure((closing.size + signatory.size) * layout.lineHeight(layout.bodyPaint) + layout.signatureSpace)
         closing.forEach { drawWrapped(sheet, it, layout.bodyPaint, layout.contentLeft) }
-        sheet.y += LetterLayout.SIGNATURE_SPACE
+        sheet.y += layout.signatureSpace
         signatory.forEach { drawWrapped(sheet, it, layout.bodyPaint, layout.contentLeft) }
     }
 
@@ -184,20 +201,21 @@ private class LetterSheet(private val document: PdfDocument, private val layout:
 
     var y: Float = 0f
 
-    var number: Int = 0
+    private var demand: Float = 0f
 
     private var page: PdfDocument.Page? = null
 
+    val fitRatio: Float get() = if (demand > layout.contentTop) layout.contentHeight / (demand - layout.contentTop) else 1f
+
+    val isOverflowing: Boolean get() = demand > layout.contentBottom
+
     fun ensure(height: Float) {
-        if (y + height > layout.contentBottom) newPage()
+        demand = maxOf(demand, y + height)
     }
 
-    fun start() = newPage()
-
-    fun newPage() {
+    fun start() {
         finish()
-        number += 1
-        val info = PdfDocument.PageInfo.Builder(LetterLayout.PAGE_WIDTH, LetterLayout.PAGE_HEIGHT, number).create()
+        val info = PdfDocument.PageInfo.Builder(LetterLayout.PAGE_WIDTH, LetterLayout.PAGE_HEIGHT, 1).create()
         val started = document.startPage(info)
 
         page = started

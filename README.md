@@ -32,8 +32,9 @@ Every piece of text on a generated document is editable in the app: the company 
 
 Both documents are laid out by a custom engine drawn directly on `Canvas` with Android's `PdfDocument`, with no third-party PDF library.
 
-- **Debit notes are A5 portrait** (420 × 595 pt, 24 pt margins); **refund letters are A4 portrait** (595 × 842 pt, 56 pt margins). Each has its own layout object, so one can never disturb the other.
+- **Both documents are A4 portrait** (595 × 842 pt) — debit notes on 34 pt margins, refund letters on 56 pt. Each has its own layout object, so one can never disturb the other.
 - **One vertical rhythm.** Every band on the page is separated by the same gap, and a blank block collapses together with its gap.
+- **Always exactly one page.** Neither generator can start a second one. A document too tall to fit is repainted on a smaller scale — vertical rhythm and type shrink together, margins, columns and hairlines stay put — until it fits, so the layout is only ever a photographic reduction of itself. A document that fits at full size, which is every realistic one, is rendered once and left alone.
 - **Decimal-aligned money.** Amounts are right-aligned on a fixed x-position with tabular figures on every paint that draws digits, so every `.00` lands on the same vertical line.
 - **One continuous table.** The charge sections and totals share a single opening rule, a filled band per section heading and one hairline between rows, so no divider is ever drawn twice.
 - **A fixed label column** shared by both charge sections, so neither section can have a ragged label edge.

@@ -30,11 +30,11 @@ class PdfExporter(private val context: Context) {
         const val SHARE_DIRECTORY: String = "shared"
     }
 
-    private val noteGenerator: DebitNotePdfGenerator by lazy { DebitNotePdfGenerator(PdfLayout(typefaces)) }
+    private val noteGenerator: DebitNotePdfGenerator by lazy { DebitNotePdfGenerator(PdfLayout(scale = 1f, typefaces = typefaces)) }
 
     private val typefaces: PdfTypefaces by lazy { resolveTypefaces() }
 
-    private val letterGenerator: RefundLetterPdfGenerator by lazy { RefundLetterPdfGenerator(LetterLayout(typefaces)) }
+    private val letterGenerator: RefundLetterPdfGenerator by lazy { RefundLetterPdfGenerator(LetterLayout(scale = 1f, typefaces = typefaces)) }
 
     fun render(document: PrintDocument): ByteArray = when (document) {
         is DebitNote -> noteGenerator.render(document)

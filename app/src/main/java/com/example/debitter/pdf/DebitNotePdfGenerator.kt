@@ -14,6 +14,23 @@ import java.math.BigDecimal
 
 class DebitNotePdfGenerator(private val layout: PdfLayout) {
     fun render(note: DebitNote): ByteArray {
+        var fitted = layout
+        var attempt = NotePainter(fitted).render(note)
+
+        while (attempt.isOverflowing && fitted.scale > PdfLayout.MIN_SCALE) {
+            fitted = fitted.scaledTo(nextScale(fitted, attempt))
+            attempt = NotePainter(fitted).render(note)
+        }
+        return attempt.bytes
+    }
+
+    private fun nextScale(fitted: PdfLayout, attempt: SheetResult): Float = (fitted.scale * attempt.fitRatio).coerceAtMost(fitted.scale - PdfLayout.FIT_STEP).coerceAtLeast(PdfLayout.MIN_SCALE)
+}
+
+private class SheetResult(val bytes: ByteArray, val fitRatio: Float, val isOverflowing: Boolean)
+
+private class NotePainter(private val layout: PdfLayout) {
+    fun render(note: DebitNote): SheetResult {
         val document = PdfDocument()
 
         try {
@@ -25,7 +42,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
             val stream = ByteArrayOutputStream()
 
             document.writeTo(stream)
-            return stream.toByteArray()
+            return SheetResult(bytes = stream.toByteArray(), fitRatio = sheet.fitRatio, isOverflowing = sheet.isOverflowing)
         } finally {
             document.close()
         }
@@ -45,12 +62,12 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         val top = sheet.y
 
         sheet.canvas.drawText(block.name, layout.contentLeft, layout.baseline(top, layout.lineHeight(layout.companyNamePaint), layout.companyNamePaint), layout.companyNamePaint)
-        sheet.y = top + layout.lineHeight(layout.companyNamePaint) + PdfLayout.GAP_XS
+        sheet.y = top + layout.lineHeight(layout.companyNamePaint) + layout.gapXs
         drawDetail(sheet, block.addressLine)
         drawDetail(sheet, block.contactLine)
-        sheet.y += PdfLayout.GAP_MD
+        sheet.y += layout.gapMd
         drawRule(sheet, layout.ruleStrongPaint)
-        sheet.y += PdfLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun drawDetail(sheet: Sheet, text: String) {
@@ -68,7 +85,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         val height = layout.lineHeight(layout.titlePaint)
 
         sheet.canvas.drawText(title, layout.contentCenterX, layout.baseline(sheet.y, height, layout.titlePaint), layout.titlePaint)
-        sheet.y += height + PdfLayout.GAP_MD
+        sheet.y += height + layout.gapMd
     }
 
     private fun drawHeader(sheet: Sheet, labels: NoteLabels, header: NoteHeader) {
@@ -87,7 +104,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         for (index in 0 until columnLength) {
             drawHeaderRow(sheet, rows[index], rows[index + columnLength])
         }
-        sheet.y += PdfLayout.GAP_MD
+        sheet.y += layout.gapMd
     }
 
     private fun drawHeaderRow(sheet: Sheet, left: Pair<String, String>, right: Pair<String, String>) {
@@ -98,7 +115,7 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
 
         val lineCount = maxOf(leftLines.size, rightLines.size)
         val lineHeight = layout.lineHeight(layout.metaStrongPaint)
-        val height = maxOf(PdfLayout.HEADER_ROW_HEIGHT, lineCount * lineHeight)
+        val height = maxOf(layout.headerRowHeight, lineCount * lineHeight)
 
         sheet.ensure(height)
         val firstBaseline = layout.blockBaseline(sheet.y, height, lineCount, layout.metaStrongPaint)
@@ -138,17 +155,17 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
     }
 
     private fun drawBand(sheet: Sheet, heading: String) {
-        sheet.ensure(PdfLayout.BAND_HEIGHT + PdfLayout.RULE_THIN + PdfLayout.CHARGE_ROW_HEIGHT)
-        sheet.canvas.drawRect(layout.contentLeft, sheet.y, layout.contentRight, sheet.y + PdfLayout.BAND_HEIGHT, layout.bandPaint)
-        sheet.canvas.drawText(heading, layout.cellLeft, layout.baseline(sheet.y, PdfLayout.BAND_HEIGHT, layout.labelPaint), layout.labelPaint)
-        sheet.y += PdfLayout.BAND_HEIGHT
+        sheet.ensure(layout.bandHeight + PdfLayout.RULE_THIN + layout.chargeRowHeight)
+        sheet.canvas.drawRect(layout.contentLeft, sheet.y, layout.contentRight, sheet.y + layout.bandHeight, layout.bandPaint)
+        sheet.canvas.drawText(heading, layout.cellLeft, layout.baseline(sheet.y, layout.bandHeight, layout.labelPaint), layout.labelPaint)
+        sheet.y += layout.bandHeight
         drawRule(sheet, layout.rulePaint)
     }
 
     private fun drawChargeRow(sheet: Sheet, line: ChargeLine, suffix: String) {
         val wrapped = layout.wrap(line.printedLabel(suffix), layout.bodyPaint, layout.chargeLabelWidth)
         val lineHeight = layout.lineHeight(layout.bodyPaint)
-        val height = maxOf(PdfLayout.CHARGE_ROW_HEIGHT, wrapped.size * lineHeight)
+        val height = maxOf(layout.chargeRowHeight, wrapped.size * lineHeight)
 
         sheet.ensure(height)
         val firstBaseline = layout.blockBaseline(sheet.y, height, wrapped.size, layout.bodyPaint)
@@ -160,23 +177,21 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
 
     private fun drawTotals(sheet: Sheet, note: DebitNote) {
         val rowCount = if (note.showsAdvance) 3 else 2
-        val height = rowCount * (PdfLayout.TOTALS_ROW_HEIGHT + PdfLayout.RULE_THIN)
-        val page = sheet.number
+        val height = rowCount * (layout.totalsRowHeight + PdfLayout.RULE_THIN)
 
         sheet.ensure(height)
-        if (sheet.number != page) drawRule(sheet, layout.rulePaint)
         drawTotalsRow(sheet, note.labels.subTotal, note.subTotal, layout.totalsValuePaint)
         if (note.showsAdvance) drawTotalsRow(sheet, note.labels.advanceReceived, note.advanceReceived ?: BigDecimal.ZERO, layout.totalsValuePaint)
         drawTotalsRow(sheet, note.labels.total, note.total, layout.totalsValueBoldPaint)
     }
 
     private fun drawTotalsRow(sheet: Sheet, label: String, amount: BigDecimal, valuePaint: Paint) {
-        val baseline = layout.baseline(sheet.y, PdfLayout.TOTALS_ROW_HEIGHT, valuePaint)
+        val baseline = layout.baseline(sheet.y, layout.totalsRowHeight, valuePaint)
 
-        sheet.canvas.drawRect(layout.contentLeft, sheet.y, layout.contentRight, sheet.y + PdfLayout.TOTALS_ROW_HEIGHT, layout.bandPaint)
+        sheet.canvas.drawRect(layout.contentLeft, sheet.y, layout.contentRight, sheet.y + layout.totalsRowHeight, layout.bandPaint)
         sheet.canvas.drawText(label, layout.cellLeft, baseline, layout.labelPaint)
         sheet.canvas.drawText(MoneyFormat.format(amount), layout.amountRight, baseline, valuePaint)
-        sheet.y += PdfLayout.TOTALS_ROW_HEIGHT
+        sheet.y += layout.totalsRowHeight
         drawRule(sheet, layout.rulePaint)
     }
 
@@ -184,12 +199,12 @@ class DebitNotePdfGenerator(private val layout: PdfLayout) {
         if (caption.isBlank()) return
 
         sheet.ensure(layout.signatureBlockHeight)
-        sheet.y = maxOf(sheet.y + PdfLayout.SIGNATURE_SPACE, layout.contentBottom - layout.signatureBlockHeight + PdfLayout.SIGNATURE_SPACE)
+        sheet.y = maxOf(sheet.y + layout.signatureSpace, layout.contentBottom - layout.signatureBlockHeight + layout.signatureSpace)
 
         val ruleY = layout.snap(sheet.y)
 
         sheet.canvas.drawLine(layout.signatureLeft, ruleY, layout.contentRight, ruleY, layout.ruleStrongPaint)
-        sheet.y += PdfLayout.RULE_STRONG + PdfLayout.GAP_XS
+        sheet.y += PdfLayout.RULE_STRONG + layout.gapXs
         sheet.canvas.drawText(caption, layout.signatureCenterX, sheet.y - layout.signaturePaint.fontMetrics.ascent, layout.signaturePaint)
         sheet.y += layout.lineHeight(layout.signaturePaint)
     }
@@ -208,20 +223,21 @@ private class Sheet(private val document: PdfDocument, private val layout: PdfLa
 
     var y: Float = 0f
 
-    var number: Int = 0
+    private var demand: Float = 0f
 
     private var page: PdfDocument.Page? = null
 
+    val fitRatio: Float get() = if (demand > layout.contentTop) layout.contentHeight / (demand - layout.contentTop) else 1f
+
+    val isOverflowing: Boolean get() = demand > layout.contentBottom
+
     fun ensure(height: Float) {
-        if (y + height > layout.contentBottom) newPage()
+        demand = maxOf(demand, y + height)
     }
 
-    fun start() = newPage()
-
-    fun newPage() {
+    fun start() {
         finish()
-        number += 1
-        val info = PdfDocument.PageInfo.Builder(PdfLayout.PAGE_WIDTH, PdfLayout.PAGE_HEIGHT, number).create()
+        val info = PdfDocument.PageInfo.Builder(PdfLayout.PAGE_WIDTH, PdfLayout.PAGE_HEIGHT, 1).create()
         val started = document.startPage(info)
 
         page = started

@@ -4,32 +4,34 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import kotlin.math.floor
 
-class PdfLayout(val typefaces: PdfTypefaces) {
+class PdfLayout(val scale: Float, val typefaces: PdfTypefaces) {
     companion object {
-        const val AMOUNT_COLUMN_WIDTH: Float = 84f
-        const val BAND_HEIGHT: Float = 16f
-        const val BODY_SIZE: Float = 9f
-        const val CELL_PAD_X: Float = 5f
-        const val CHARGE_ROW_HEIGHT: Float = 18f
-        const val COLON_OFFSET: Float = 76f
-        const val COMPANY_NAME_SIZE: Float = 14f
-        const val GAP_MD: Float = 10f
-        const val GAP_SM: Float = 6f
-        const val GAP_XS: Float = 3f
-        const val HEADER_COLUMN_GAP: Float = 12f
-        const val HEADER_ROW_HEIGHT: Float = 14f
-        const val LABEL_SIZE: Float = 7.5f
-        const val MARGIN: Float = 24f
-        const val META_SIZE: Float = 8.5f
+        const val AMOUNT_COLUMN_WIDTH: Float = 118f
+        const val BAND_HEIGHT: Float = 22f
+        const val BODY_SIZE: Float = 11.5f
+        const val CELL_PAD_X: Float = 7f
+        const val CHARGE_ROW_HEIGHT: Float = 24f
+        const val COLON_OFFSET: Float = 108f
+        const val COMPANY_NAME_SIZE: Float = 20f
+        const val FIT_STEP: Float = 0.02f
+        const val GAP_MD: Float = 14f
+        const val GAP_SM: Float = 8f
+        const val GAP_XS: Float = 4f
+        const val HEADER_COLUMN_GAP: Float = 17f
+        const val HEADER_ROW_HEIGHT: Float = 20f
+        const val LABEL_SIZE: Float = 10f
+        const val MARGIN: Float = 34f
+        const val META_SIZE: Float = 12f
+        const val MIN_SCALE: Float = 0.5f
         const val RULE_STRONG: Float = 1f
         const val RULE_THIN: Float = 0.75f
-        const val SIGNATURE_SPACE: Float = 22f
-        const val SIGNATURE_WIDTH: Float = 130f
-        const val TOTALS_ROW_HEIGHT: Float = 18f
+        const val SIGNATURE_SPACE: Float = 31f
+        const val SIGNATURE_WIDTH: Float = 184f
+        const val TOTALS_ROW_HEIGHT: Float = 24f
         const val TRACKING_LABEL: Float = 0.08f
 
-        const val PAGE_HEIGHT: Int = 595
-        const val PAGE_WIDTH: Int = 420
+        const val PAGE_HEIGHT: Int = 842
+        const val PAGE_WIDTH: Int = 595
 
         val BAND_COLOR: Int = 0xFFF2F2F2.toInt()
         val HAIRLINE_COLOR: Int = 0xFFBFBFBF.toInt()
@@ -38,19 +40,31 @@ class PdfLayout(val typefaces: PdfTypefaces) {
         val LETTERHEAD_COLOR: Int = 0xFF002060.toInt()
     }
 
-    val amountPaint: Paint = textPaint(typefaces.semiBold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
+    val bandHeight: Float = BAND_HEIGHT * scale
+    val bodySize: Float = BODY_SIZE * scale
+    val chargeRowHeight: Float = CHARGE_ROW_HEIGHT * scale
+    val companyNameSize: Float = COMPANY_NAME_SIZE * scale
+    val gapMd: Float = GAP_MD * scale
+    val gapXs: Float = GAP_XS * scale
+    val headerRowHeight: Float = HEADER_ROW_HEIGHT * scale
+    val labelSize: Float = LABEL_SIZE * scale
+    val metaSize: Float = META_SIZE * scale
+    val signatureSpace: Float = SIGNATURE_SPACE * scale
+    val totalsRowHeight: Float = TOTALS_ROW_HEIGHT * scale
+
+    val amountPaint: Paint = textPaint(typefaces.semiBold, bodySize, INK_COLOR, Paint.Align.RIGHT)
     val bandPaint: Paint = fillPaint(BAND_COLOR)
-    val bodyPaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.LEFT)
-    val companyDetailPaint: Paint = textPaint(typefaces.regular, META_SIZE, INK_COLOR, Paint.Align.LEFT)
-    val companyNamePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, LETTERHEAD_COLOR, Paint.Align.LEFT)
-    val labelPaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.LEFT, TRACKING_LABEL)
-    val metaStrongPaint: Paint = textPaint(typefaces.semiBold, META_SIZE, INK_COLOR, Paint.Align.LEFT)
+    val bodyPaint: Paint = textPaint(typefaces.regular, bodySize, INK_COLOR, Paint.Align.LEFT)
+    val companyDetailPaint: Paint = textPaint(typefaces.regular, metaSize, INK_COLOR, Paint.Align.LEFT)
+    val companyNamePaint: Paint = textPaint(typefaces.displayBold, companyNameSize, LETTERHEAD_COLOR, Paint.Align.LEFT)
+    val labelPaint: Paint = textPaint(typefaces.semiBold, labelSize, INK_MUTED_COLOR, Paint.Align.LEFT, TRACKING_LABEL)
+    val metaStrongPaint: Paint = textPaint(typefaces.semiBold, metaSize, INK_COLOR, Paint.Align.LEFT)
     val rulePaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_THIN)
     val ruleStrongPaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_STRONG)
-    val signaturePaint: Paint = textPaint(typefaces.semiBold, LABEL_SIZE, INK_MUTED_COLOR, Paint.Align.CENTER, TRACKING_LABEL)
-    val titlePaint: Paint = textPaint(typefaces.displayBold, COMPANY_NAME_SIZE, INK_COLOR, Paint.Align.CENTER)
-    val totalsValueBoldPaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
-    val totalsValuePaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.RIGHT)
+    val signaturePaint: Paint = textPaint(typefaces.semiBold, labelSize, INK_MUTED_COLOR, Paint.Align.CENTER, TRACKING_LABEL)
+    val titlePaint: Paint = textPaint(typefaces.displayBold, companyNameSize, INK_COLOR, Paint.Align.CENTER)
+    val totalsValueBoldPaint: Paint = textPaint(typefaces.bold, bodySize, INK_COLOR, Paint.Align.RIGHT)
+    val totalsValuePaint: Paint = textPaint(typefaces.regular, bodySize, INK_COLOR, Paint.Align.RIGHT)
 
     private val lineHeights: Map<Paint, Float> by lazy {
         listOf(
@@ -73,13 +87,14 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     val chargeLabelWidth: Float get() = amountLeft - cellLeft - CELL_PAD_X
     val contentBottom: Float get() = PAGE_HEIGHT - MARGIN
     val contentCenterX: Float get() = (contentLeft + contentRight) / 2f
+    val contentHeight: Float get() = contentBottom - contentTop
     val contentLeft: Float get() = MARGIN
     val contentRight: Float get() = PAGE_WIDTH - MARGIN
     val contentTop: Float get() = MARGIN
     val headerColumnWidth: Float get() = (contentRight - contentLeft - HEADER_COLUMN_GAP) / 2f
     val headerRightX: Float get() = contentLeft + headerColumnWidth + HEADER_COLUMN_GAP
     val headerValueWidth: Float get() = headerColumnWidth - COLON_OFFSET - GAP_SM
-    val signatureBlockHeight: Float get() = SIGNATURE_SPACE + RULE_STRONG + GAP_XS + lineHeight(signaturePaint)
+    val signatureBlockHeight: Float get() = signatureSpace + RULE_STRONG + gapXs + lineHeight(signaturePaint)
     val signatureCenterX: Float get() = signatureLeft + SIGNATURE_WIDTH / 2f
     val signatureLeft: Float get() = contentRight - SIGNATURE_WIDTH
 
@@ -93,6 +108,8 @@ class PdfLayout(val typefaces: PdfTypefaces) {
     fun colonX(columnX: Float): Float = columnX + COLON_OFFSET
 
     fun headerValueLeft(columnX: Float): Float = columnX + COLON_OFFSET + GAP_SM
+
+    fun scaledTo(factor: Float): PdfLayout = PdfLayout(scale = factor, typefaces = typefaces)
 
     fun snap(value: Float): Float = floor(value) + 0.5f
 

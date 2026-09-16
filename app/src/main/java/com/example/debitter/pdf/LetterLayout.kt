@@ -13,16 +13,18 @@ class TextWord(val runs: List<TextRun>) {
     val width: Float get() = runs.fold(0f) { total, run -> total + run.width }
 }
 
-class LetterLayout(val typefaces: PdfTypefaces) {
+class LetterLayout(val scale: Float, val typefaces: PdfTypefaces) {
     companion object {
         const val BODY_SIZE: Float = 11f
         const val COLON_GAP: Float = 12f
+        const val FIT_STEP: Float = 0.02f
         const val GAP_MD: Float = 16f
         const val GAP_XS: Float = 3f
         const val LABEL_COLUMN_WIDTH: Float = 96f
         const val LETTERHEAD_DETAIL_SIZE: Float = 10f
         const val LETTERHEAD_NAME_SIZE: Float = 20f
         const val MARGIN: Float = 56f
+        const val MIN_SCALE: Float = 0.5f
         const val RULE_STRONG: Float = 1f
         const val SIGNATURE_SPACE: Float = 40f
         const val TAGLINE_SIZE: Float = 13f
@@ -35,13 +37,21 @@ class LetterLayout(val typefaces: PdfTypefaces) {
         val LETTERHEAD_COLOR: Int = 0xFF002060.toInt()
     }
 
-    val bodyPaint: Paint = textPaint(typefaces.regular, BODY_SIZE, INK_COLOR, Paint.Align.LEFT)
-    val boldPaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.LEFT)
-    val letterheadDetailPaint: Paint = textPaint(typefaces.regular, LETTERHEAD_DETAIL_SIZE, INK_COLOR, Paint.Align.CENTER)
-    val letterheadNamePaint: Paint = textPaint(typefaces.displayBold, LETTERHEAD_NAME_SIZE, LETTERHEAD_COLOR, Paint.Align.CENTER)
+    val bodySize: Float = BODY_SIZE * scale
+    val gapMd: Float = GAP_MD * scale
+    val gapXs: Float = GAP_XS * scale
+    val letterheadDetailSize: Float = LETTERHEAD_DETAIL_SIZE * scale
+    val letterheadNameSize: Float = LETTERHEAD_NAME_SIZE * scale
+    val signatureSpace: Float = SIGNATURE_SPACE * scale
+    val taglineSize: Float = TAGLINE_SIZE * scale
+
+    val bodyPaint: Paint = textPaint(typefaces.regular, bodySize, INK_COLOR, Paint.Align.LEFT)
+    val boldPaint: Paint = textPaint(typefaces.bold, bodySize, INK_COLOR, Paint.Align.LEFT)
+    val letterheadDetailPaint: Paint = textPaint(typefaces.regular, letterheadDetailSize, INK_COLOR, Paint.Align.CENTER)
+    val letterheadNamePaint: Paint = textPaint(typefaces.displayBold, letterheadNameSize, LETTERHEAD_COLOR, Paint.Align.CENTER)
     val ruleStrongPaint: Paint = strokePaint(HAIRLINE_COLOR, RULE_STRONG)
-    val taglinePaint: Paint = textPaint(typefaces.bold, TAGLINE_SIZE, INK_COLOR, Paint.Align.CENTER)
-    val titlePaint: Paint = textPaint(typefaces.bold, BODY_SIZE, INK_COLOR, Paint.Align.CENTER)
+    val taglinePaint: Paint = textPaint(typefaces.bold, taglineSize, INK_COLOR, Paint.Align.CENTER)
+    val titlePaint: Paint = textPaint(typefaces.bold, bodySize, INK_COLOR, Paint.Align.CENTER)
 
     private val lineHeights: Map<Paint, Float> by lazy {
         listOf(
@@ -57,6 +67,7 @@ class LetterLayout(val typefaces: PdfTypefaces) {
     val colonX: Float get() = contentLeft + LABEL_COLUMN_WIDTH
     val contentBottom: Float get() = PAGE_HEIGHT - MARGIN
     val contentCenterX: Float get() = (contentLeft + contentRight) / 2f
+    val contentHeight: Float get() = contentBottom - contentTop
     val contentLeft: Float get() = MARGIN
     val contentRight: Float get() = PAGE_WIDTH - MARGIN
     val contentTop: Float get() = MARGIN
@@ -68,6 +79,8 @@ class LetterLayout(val typefaces: PdfTypefaces) {
     fun baseline(top: Float, paint: Paint): Float = top - paint.fontMetrics.ascent
 
     fun lineHeight(paint: Paint): Float = lineHeights[paint] ?: measureLineHeight(paint)
+
+    fun scaledTo(factor: Float): LetterLayout = LetterLayout(scale = factor, typefaces = typefaces)
 
     fun snap(value: Float): Float = floor(value) + 0.5f
 
