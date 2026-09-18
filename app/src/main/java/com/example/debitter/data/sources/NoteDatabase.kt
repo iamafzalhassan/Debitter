@@ -1,10 +1,10 @@
 package com.example.debitter.data.sources
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.core.content.contentValuesOf
 import com.example.debitter.data.LetterPresets
 import java.util.UUID
 
@@ -41,84 +41,36 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         const val TABLE_NOTES: String = "recent_notes"
     }
 
-    fun delete(id: String) {
-        writableDatabase.delete(TABLE_NOTES, "$COLUMN_ID = ?", arrayOf(id))
-    }
+    fun delete(id: String) = deleteRow(TABLE_NOTES, id)
 
-    fun deleteAgent(id: String) {
-        writableDatabase.delete(TABLE_AGENTS, "$COLUMN_ID = ?", arrayOf(id))
-    }
+    fun deleteAgent(id: String) = deleteRow(TABLE_AGENTS, id)
 
-    fun deleteCustomer(id: String) {
-        writableDatabase.delete(TABLE_CUSTOMERS, "$COLUMN_ID = ?", arrayOf(id))
-    }
+    fun deleteCustomer(id: String) = deleteRow(TABLE_CUSTOMERS, id)
 
-    fun deleteLetter(id: String) {
-        writableDatabase.delete(TABLE_LETTERS, "$COLUMN_ID = ?", arrayOf(id))
-    }
+    fun deleteLetter(id: String) = deleteRow(TABLE_LETTERS, id)
 
-    fun readAll(): List<NoteRow> {
-        val rows = mutableListOf<NoteRow>()
+    fun readAll(): List<NoteRow> = readRows(TABLE_NOTES, "$COLUMN_CREATED_AT DESC") { toRow() }
 
-        readableDatabase.query(TABLE_NOTES, null, null, null, null, null, "$COLUMN_CREATED_AT DESC").use { cursor ->
-            while (cursor.moveToNext()) rows += cursor.toRow()
-        }
-        return rows
-    }
+    fun readAllAgents(): List<AgentRow> = readRows(TABLE_AGENTS, "$COLUMN_NAME COLLATE NOCASE ASC") { toAgentRow() }
 
-    fun readAllAgents(): List<AgentRow> {
-        val rows = mutableListOf<AgentRow>()
+    fun readAllCustomers(): List<CustomerRow> = readRows(TABLE_CUSTOMERS, "$COLUMN_NAME COLLATE NOCASE ASC") { toCustomerRow() }
 
-        readableDatabase.query(TABLE_AGENTS, null, null, null, null, null, "$COLUMN_NAME COLLATE NOCASE ASC").use { cursor ->
-            while (cursor.moveToNext()) rows += cursor.toAgentRow()
-        }
-        return rows
-    }
+    fun readAllLetters(): List<LetterRow> = readRows(TABLE_LETTERS, "$COLUMN_CREATED_AT DESC") { toLetterRow() }
 
-    fun readAllCustomers(): List<CustomerRow> {
-        val rows = mutableListOf<CustomerRow>()
-
-        readableDatabase.query(TABLE_CUSTOMERS, null, null, null, null, null, "$COLUMN_NAME COLLATE NOCASE ASC").use { cursor ->
-            while (cursor.moveToNext()) rows += cursor.toCustomerRow()
-        }
-        return rows
-    }
-
-    fun readAllLetters(): List<LetterRow> {
-        val rows = mutableListOf<LetterRow>()
-
-        readableDatabase.query(TABLE_LETTERS, null, null, null, null, null, "$COLUMN_CREATED_AT DESC").use { cursor ->
-            while (cursor.moveToNext()) rows += cursor.toLetterRow()
-        }
-        return rows
-    }
-
-    fun upsert(row: NoteRow) {
-        val values = ContentValues().apply {
-            put(COLUMN_CREATED_AT, row.createdAt)
-            put(COLUMN_BILL_TO, row.billTo)
-            put(COLUMN_ID, row.id)
-            put(COLUMN_PAYLOAD, row.payload)
-            put(COLUMN_TOTAL, row.total)
-        }
-
-        writableDatabase.insertWithOnConflict(TABLE_NOTES, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-    }
+    fun upsert(row: NoteRow) = writableDatabase.upsertRow(TABLE_NOTES, COLUMN_CREATED_AT to row.createdAt, COLUMN_BILL_TO to row.billTo, COLUMN_ID to row.id, COLUMN_PAYLOAD to row.payload, COLUMN_TOTAL to row.total)
 
     fun upsertAgent(row: AgentRow) = insertAgent(writableDatabase, row)
 
     fun upsertCustomer(row: CustomerRow) = insertCustomer(writableDatabase, row)
 
-    fun upsertLetter(row: LetterRow) {
-        val values = ContentValues().apply {
-            put(COLUMN_CREATED_AT, row.createdAt)
-            put(COLUMN_AGENT, row.agent)
-            put(COLUMN_CUSTOMER, row.customer)
-            put(COLUMN_ID, row.id)
-            put(COLUMN_PAYLOAD, row.payload)
-        }
+    fun upsertLetter(row: LetterRow) = writableDatabase.upsertRow(TABLE_LETTERS, COLUMN_CREATED_AT to row.createdAt, COLUMN_AGENT to row.agent, COLUMN_CUSTOMER to row.customer, COLUMN_ID to row.id, COLUMN_PAYLOAD to row.payload)
 
-        writableDatabase.insertWithOnConflict(TABLE_LETTERS, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    private fun deleteRow(table: String, id: String) {
+        writableDatabase.delete(table, "$COLUMN_ID = ?", arrayOf(id))
+    }
+
+    private fun <T> readRows(table: String, orderBy: String, read: Cursor.() -> T): List<T> = readableDatabase.query(table, null, null, null, null, null, orderBy).use { cursor ->
+        buildList { while (cursor.moveToNext()) add(cursor.read()) }
     }
 
     private fun Cursor.toRow(): NoteRow = NoteRow(
@@ -196,17 +148,7 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         }
     }
 
-    private fun insertCustomer(db: SQLiteDatabase, row: CustomerRow) {
-        val values = ContentValues().apply {
-            put(COLUMN_ADDRESS_LINE, row.addressLine)
-            put(COLUMN_CONTACT_LINE, row.contactLine)
-            put(COLUMN_ID, row.id)
-            put(COLUMN_NAME, row.name)
-            put(COLUMN_TAGLINE, row.tagline)
-        }
-
-        db.insertWithOnConflict(TABLE_CUSTOMERS, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-    }
+    private fun insertCustomer(db: SQLiteDatabase, row: CustomerRow) = db.upsertRow(TABLE_CUSTOMERS, COLUMN_ADDRESS_LINE to row.addressLine, COLUMN_CONTACT_LINE to row.contactLine, COLUMN_ID to row.id, COLUMN_NAME to row.name, COLUMN_TAGLINE to row.tagline)
 
     private fun createAgents(db: SQLiteDatabase) {
         db.execSQL(
@@ -220,14 +162,10 @@ class NoteDatabase(context: Context) : SQLiteOpenHelper(context.applicationConte
         }
     }
 
-    private fun insertAgent(db: SQLiteDatabase, row: AgentRow) {
-        val values = ContentValues().apply {
-            put(COLUMN_ADDRESS, row.address)
-            put(COLUMN_ID, row.id)
-            put(COLUMN_NAME, row.name)
-        }
+    private fun insertAgent(db: SQLiteDatabase, row: AgentRow) = db.upsertRow(TABLE_AGENTS, COLUMN_ADDRESS to row.address, COLUMN_ID to row.id, COLUMN_NAME to row.name)
 
-        db.insertWithOnConflict(TABLE_AGENTS, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    private fun SQLiteDatabase.upsertRow(table: String, vararg values: Pair<String, Any?>) {
+        insertWithOnConflict(table, null, contentValuesOf(*values), SQLiteDatabase.CONFLICT_REPLACE)
     }
 
     override fun onCreate(db: SQLiteDatabase) {

@@ -15,16 +15,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,12 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.DocumentKind
 import com.example.debitter.model.SavedDocument
 import com.example.debitter.pdf.PdfExporter
 import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.AppTopBar
 import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.recent.components.RecentActionsSheet
 import com.example.debitter.ui.recent.components.RecentTile
@@ -53,7 +48,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Unit, onDelete: (SavedDocument) -> Unit, onEdit: (SavedDocument) -> Unit, kind: DocumentKind, state: RecentState, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -77,17 +71,7 @@ fun RecentScreen(message: String?, onBack: () -> Unit, onMessageShown: () -> Uni
         modifier = modifier.fillMaxSize(),
         containerColor = AppColors.surfaceBase,
         snackbarHost = { AppSnackbarHost(state = snackbarState) },
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(contentDescription = "Back", imageVector = Icons.AutoMirrored.Filled.ArrowBack, tint = AppColors.textPrimary)
-                    }
-                },
-                title = { Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.screenTitle, text = "Recent") },
-            )
-        },
+        topBar = { AppTopBar(onBack = onBack, title = "Recent") },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {

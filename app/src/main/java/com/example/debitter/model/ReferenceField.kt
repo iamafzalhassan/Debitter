@@ -1,6 +1,6 @@
 package com.example.debitter.model
 
-enum class ReferenceField { CONTAINER_NO, BL_NO, VESSEL, VOYAGE, RECEIPT_NO }
+enum class ReferenceField(val key: String) { CONTAINER_NO("containerNo"), BL_NO("blNo"), VESSEL("vessel"), VOYAGE("voyage"), RECEIPT_NO("receiptNo") }
 
 fun LetterReferences.value(field: ReferenceField): String = when (field) {
     ReferenceField.BL_NO -> blNo

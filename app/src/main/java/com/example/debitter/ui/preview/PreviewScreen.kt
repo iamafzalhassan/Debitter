@@ -19,17 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -41,17 +33,16 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.PrintDocument
 import com.example.debitter.pdf.PdfExporter
 import com.example.debitter.pdf.SaveLocation
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.AppTopBar
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
 import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
-import com.example.debitter.ui.theme.AppTextStyles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,7 +51,6 @@ private const val PREVIEW_SCALE: Int = 2
 
 private const val PREVIEW_FILE: String = "preview.pdf"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, document: PrintDocument, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -104,17 +94,7 @@ fun PreviewScreen(onBack: () -> Unit, onSaved: (SaveLocation) -> Unit, document:
         },
         containerColor = AppColors.surfaceSunken,
         snackbarHost = { AppSnackbarHost(state = snackbarState) },
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(contentDescription = "Back", imageVector = Icons.AutoMirrored.Filled.ArrowBack, tint = AppColors.textPrimary)
-                    }
-                },
-                title = { Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.screenTitle, text = "Preview") },
-            )
-        },
+        topBar = { AppTopBar(onBack = onBack, title = "Preview") },
     ) { padding ->
         val pages = preview?.pages
 

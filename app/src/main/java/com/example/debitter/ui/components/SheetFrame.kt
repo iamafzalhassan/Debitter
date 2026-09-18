@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
+import kotlinx.coroutines.launch
 
 @Composable
 fun SheetFrame(title: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
@@ -44,4 +48,12 @@ fun SheetActions(primary: @Composable RowScope.() -> Unit, secondary: @Composabl
             primary()
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun rememberHideThen(sheetState: SheetState): (() -> Unit) -> Unit {
+    val scope = rememberCoroutineScope()
+
+    return { action -> scope.launch { sheetState.hide() }.invokeOnCompletion { action() } }
 }

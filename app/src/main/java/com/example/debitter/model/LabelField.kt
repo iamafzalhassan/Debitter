@@ -1,22 +1,22 @@
 package com.example.debitter.model
 
-enum class LabelField(val caption: String) {
-    TITLE("Document Title"),
-    DATE("Date Label"),
-    BILL_TO("To Label"),
-    VESSEL_FLIGHT("Vessel/Flight Label"),
-    CUSTOMS_ENTRY("Customs Entry Label"),
-    CONTAINER_NO("Container No Label"),
-    BL_AWB_NO("BL/AWB No Label"),
-    VOYAGE_NO_DATE("Voyage No/Date Label"),
-    CONSIGNMENT("Consignment Label"),
-    STATUTORY_SECTION("Statutory Section Heading"),
-    OTHER_SECTION("Other Section Heading"),
-    CHARGE_SUFFIX("Charge Word"),
-    SUB_TOTAL("Sub Total Label"),
-    ADVANCE_RECEIVED("Advanced Received Label"),
-    TOTAL("Total Label"),
-    SIGNATURE("Signature Caption"),
+enum class LabelField(val caption: String, val key: String) {
+    TITLE("Document Title", "title"),
+    DATE("Date Label", "date"),
+    BILL_TO("To Label", "billTo"),
+    VESSEL_FLIGHT("Vessel/Flight Label", "vesselFlight"),
+    CUSTOMS_ENTRY("Customs Entry Label", "customsEntry"),
+    CONTAINER_NO("Container No Label", "containerNo"),
+    BL_AWB_NO("BL/AWB No Label", "blAwbNo"),
+    VOYAGE_NO_DATE("Voyage No/Date Label", "voyageNoDate"),
+    CONSIGNMENT("Consignment Label", "consignment"),
+    STATUTORY_SECTION("Statutory Section Heading", "statutorySection"),
+    OTHER_SECTION("Other Section Heading", "otherSection"),
+    CHARGE_SUFFIX("Charge Word", "chargeSuffix"),
+    SUB_TOTAL("Sub Total Label", "subTotal"),
+    ADVANCE_RECEIVED("Advanced Received Label", "advanceReceived"),
+    TOTAL("Total Label", "total"),
+    SIGNATURE("Signature Caption", "signature"),
 }
 
 fun NoteLabels.value(field: LabelField): String = when (field) {

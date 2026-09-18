@@ -1,22 +1,21 @@
 package com.example.debitter.model
 
-enum class LetterLabelField(val caption: String) {
-    ATTENTION("Attention Line"),
-    TITLE("Document Title"),
-    CONTAINER_NO("Container No Label"),
-    BL_NO("BL No Label"),
-    VESSEL("Vessel Label"),
-    VOYAGE("Voyage Label"),
-    RECEIPT_NO("Receipt No Label"),
-    SALUTATION("Salutation Line"),
-    BODY("Letter Body"),
-    EMPHASIS("Bold Words"),
-    CLOSING("Closing Line"),
-    SIGN_OFF("Sign-Off Line"),
-    SIGNATORY_TITLE("Signatory Title"),
-    SIGNATORY_NAME("Signatory Name"),
-    SIGNATORY_PHONE("Signatory Phone"),
-    ;
+enum class LetterLabelField(val caption: String, val key: String) {
+    ATTENTION("Attention Line", "attention"),
+    TITLE("Document Title", "title"),
+    CONTAINER_NO("Container No Label", "containerNo"),
+    BL_NO("BL No Label", "blNo"),
+    VESSEL("Vessel Label", "vessel"),
+    VOYAGE("Voyage Label", "voyage"),
+    RECEIPT_NO("Receipt No Label", "receiptNo"),
+    SALUTATION("Salutation Line", "salutation"),
+    BODY("Letter Body", "body"),
+    EMPHASIS("Bold Words", "emphasis"),
+    CLOSING("Closing Line", "closing"),
+    SIGN_OFF("Sign-Off Line", "signOff"),
+    SIGNATORY_TITLE("Signatory Title", "signatoryTitle"),
+    SIGNATORY_NAME("Signatory Name", "signatoryName"),
+    SIGNATORY_PHONE("Signatory Phone", "signatoryPhone");
 
     val isMultiline: Boolean get() = this == BODY
     val isUppercase: Boolean get() = this == TITLE

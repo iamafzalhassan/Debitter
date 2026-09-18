@@ -12,22 +12,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.example.debitter.ui.components.DangerButton
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SheetActions
 import com.example.debitter.ui.components.SheetFrame
+import com.example.debitter.ui.components.rememberHideThen
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntrySheet(isNew: Boolean, isValid: Boolean, noun: String, onDelete: () -> Unit, onDismiss: () -> Unit, onSave: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val hideThen: (() -> Unit) -> Unit = { action -> scope.launch { sheetState.hide() }.invokeOnCompletion { action() } }
+    val hideThen = rememberHideThen(sheetState)
 
     ModalBottomSheet(containerColor = AppColors.surfaceCard, onDismissRequest = onDismiss, sheetState = sheetState) {
         SheetFrame(modifier = Modifier.imePadding(), title = if (isNew) "Add $noun" else "Edit $noun") {

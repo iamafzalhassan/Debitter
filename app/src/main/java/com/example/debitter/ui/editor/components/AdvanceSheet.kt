@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.debitter.ui.components.AmountField
@@ -20,19 +19,18 @@ import com.example.debitter.ui.components.DangerButton
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SheetActions
 import com.example.debitter.ui.components.SheetFrame
+import com.example.debitter.ui.components.rememberHideThen
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
 import com.example.debitter.util.MoneyFormat
 import java.math.BigDecimal
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvanceSheet(onDismiss: () -> Unit, onRemove: () -> Unit, onSave: (BigDecimal) -> Unit, subTotal: BigDecimal, advance: BigDecimal?) {
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
-    val hideThen: (() -> Unit) -> Unit = { action -> scope.launch { sheetState.hide() }.invokeOnCompletion { action() } }
+    val hideThen = rememberHideThen(sheetState)
 
     var draft by remember { mutableStateOf(advance) }
 

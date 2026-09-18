@@ -80,7 +80,7 @@ object Defaults {
 
     fun lines(section: ChargeSection): List<ChargeLine> = ChargePresets.labels(section).map { ChargeLine.preset(label = it, appendsSuffix = ChargePresets.appendsSuffix(it)) }
 
-    private fun header(today: LocalDate): NoteHeader = NoteHeader(
+    fun header(date: LocalDate?): NoteHeader = NoteHeader(
         billTo = "",
         blAwbNo = "",
         consignment = "",
@@ -88,6 +88,6 @@ object Defaults {
         customsEntry = "",
         vesselFlight = "",
         voyageNoDate = "",
-        date = today,
+        date = date,
     )
 }

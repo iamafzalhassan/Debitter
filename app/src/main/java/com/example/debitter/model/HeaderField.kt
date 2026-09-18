@@ -1,6 +1,6 @@
 package com.example.debitter.model
 
-enum class HeaderField { BILL_TO, VESSEL_FLIGHT, CUSTOMS_ENTRY, CONTAINER_NO, BL_AWB_NO, VOYAGE_NO_DATE, CONSIGNMENT }
+enum class HeaderField(val key: String) { BILL_TO("billTo"), VESSEL_FLIGHT("vesselFlight"), CUSTOMS_ENTRY("customsEntry"), CONTAINER_NO("containerNo"), BL_AWB_NO("blAwbNo"), VOYAGE_NO_DATE("voyageNoDate"), CONSIGNMENT("consignment") }
 
 fun NoteHeader.value(field: HeaderField): String = when (field) {
     HeaderField.BILL_TO -> billTo

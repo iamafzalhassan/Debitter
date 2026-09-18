@@ -1,9 +1,9 @@
 package com.example.debitter.model
 
-enum class CompanyField(val caption: String) {
-    NAME("Company Name"),
-    ADDRESS_LINE("Address Line"),
-    CONTACT_LINE("Contact Line"),
+enum class CompanyField(val caption: String, val key: String) {
+    NAME("Company Name", "name"),
+    ADDRESS_LINE("Address Line", "addressLine"),
+    CONTACT_LINE("Contact Line", "contactLine"),
 }
 
 fun CompanyBlock.value(field: CompanyField): String = when (field) {

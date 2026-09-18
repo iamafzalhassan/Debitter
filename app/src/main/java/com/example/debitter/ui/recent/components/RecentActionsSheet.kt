@@ -21,25 +21,23 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.SavedDocument
 import com.example.debitter.ui.components.DottedDivider
+import com.example.debitter.ui.components.rememberHideThen
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
 import com.example.debitter.ui.theme.AppTextStyles
 import com.example.debitter.util.RecentDateFormat
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecentActionsSheet(onDelete: () -> Unit, onDismiss: () -> Unit, onEdit: () -> Unit, onSaveCopy: () -> Unit, onShare: () -> Unit, saved: SavedDocument) {
-    val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
-    val hideThen: (() -> Unit) -> Unit = { action -> scope.launch { sheetState.hide() }.invokeOnCompletion { action() } }
+    val hideThen = rememberHideThen(sheetState)
 
     ModalBottomSheet(containerColor = AppColors.surfaceCard, onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {

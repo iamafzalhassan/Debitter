@@ -10,15 +10,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ReceiptLong
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,12 +22,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.DocumentKind
 import com.example.debitter.model.Letterhead
 import com.example.debitter.model.RefundLetter
 import com.example.debitter.model.ShippingAgent
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.AppTopBar
 import com.example.debitter.ui.components.PresetSheet
 import com.example.debitter.ui.components.PrimaryButton
 import com.example.debitter.ui.components.SecondaryButton
@@ -44,10 +39,8 @@ import com.example.debitter.ui.letter.components.LetterheadFields
 import com.example.debitter.ui.letter.components.ReferenceFields
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
-import com.example.debitter.ui.theme.AppTextStyles
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LetterScreen(
     letterheads: List<Letterhead>,
@@ -71,20 +64,11 @@ fun LetterScreen(
         containerColor = AppColors.surfaceBase,
         snackbarHost = { AppSnackbarHost(state = snackbarState) },
         topBar = {
-            TopAppBar(
-                actions = {
-                    IconButton(onClick = onRecent) {
-                        Icon(contentDescription = "Recent letters", imageVector = Icons.Outlined.ReceiptLong, tint = AppColors.textSecondary)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(contentDescription = "Back", imageVector = Icons.AutoMirrored.Filled.ArrowBack, tint = AppColors.textPrimary)
-                    }
-                },
-                title = { Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.screenTitle, text = DocumentKind.REFUND_LETTER.title) },
-            )
+            AppTopBar(onBack = onBack, title = DocumentKind.REFUND_LETTER.title) {
+                IconButton(onClick = onRecent) {
+                    Icon(contentDescription = "Recent letters", imageVector = Icons.Outlined.ReceiptLong, tint = AppColors.textSecondary)
+                }
+            }
         },
     ) { padding ->
         LazyColumn(

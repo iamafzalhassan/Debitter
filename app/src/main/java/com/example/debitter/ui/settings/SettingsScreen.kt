@@ -6,16 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,22 +16,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.debitter.model.AgentEntry
 import com.example.debitter.model.CustomerEntry
 import com.example.debitter.model.Letterhead
 import com.example.debitter.model.ShippingAgent
 import com.example.debitter.ui.components.AppSnackbarHost
+import com.example.debitter.ui.components.AppTopBar
 import com.example.debitter.ui.components.rememberAppSnackbarState
 import com.example.debitter.ui.settings.components.AgentSheet
 import com.example.debitter.ui.settings.components.CustomerSheet
 import com.example.debitter.ui.settings.components.directorySection
 import com.example.debitter.ui.theme.AppColors
 import com.example.debitter.ui.theme.AppSpacing
-import com.example.debitter.ui.theme.AppTextStyles
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -64,17 +54,7 @@ fun SettingsScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = AppColors.surfaceBase,
         snackbarHost = { AppSnackbarHost(state = snackbarState) },
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppColors.surfaceBase, scrolledContainerColor = AppColors.surfaceBase),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(contentDescription = "Back", imageVector = Icons.AutoMirrored.Filled.ArrowBack, tint = AppColors.textPrimary)
-                    }
-                },
-                title = { Text(maxLines = 1, overflow = TextOverflow.Ellipsis, style = AppTextStyles.screenTitle, text = "Settings") },
-            )
-        },
+        topBar = { AppTopBar(onBack = onBack, title = "Settings") },
     ) { padding ->
         if (state.isLoading) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {

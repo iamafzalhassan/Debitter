@@ -1,8 +1,8 @@
 package com.example.debitter.model
 
-enum class AgentField(val caption: String) {
-    NAME("Agent Name"),
-    ADDRESS("Address Lines"),
+enum class AgentField(val caption: String, val key: String) {
+    NAME("Agent Name", "name"),
+    ADDRESS("Address Lines", "address"),
     ;
 
     val isMultiline: Boolean get() = this == ADDRESS

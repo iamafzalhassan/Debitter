@@ -1,10 +1,10 @@
 package com.example.debitter.model
 
-enum class LetterheadField(val caption: String) {
-    NAME("Company Name"),
-    TAGLINE("Tagline"),
-    ADDRESS_LINE("Address Line"),
-    CONTACT_LINE("Contact Line"),
+enum class LetterheadField(val caption: String, val key: String) {
+    NAME("Company Name", "name"),
+    TAGLINE("Tagline", "tagline"),
+    ADDRESS_LINE("Address Line", "addressLine"),
+    CONTACT_LINE("Contact Line", "contactLine"),
     ;
 
     val isUppercase: Boolean get() = this != TAGLINE
